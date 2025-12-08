@@ -12,6 +12,23 @@ nav {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   padding: 1.2rem 5%;
 }
+
+nav ul a {
+  text-decoration: none;
+  color: var(--navy);
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+nav ul a:hover {
+  color: white;
+  background-color: var(--primary-red);
+  padding: 10px 15px;
+  border-radius: 5px;
+  transform: translateX(3px);
+  transition: all 0.3s ease;
+}
+
 .outSideNav {
   display: flex;
   flex-direction: column;
