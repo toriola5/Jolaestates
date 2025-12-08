@@ -1,0 +1,50 @@
+.contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  align-items: flex-start;
+  background: white;
+
+  box-shadow: var(--shadow);
+  /* padding: 3rem 2rem; */
+  padding-top: 1rem;
+  /* margin: 3rem 2rem; */
+  /* max-width: 1200px; */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.contact > div {
+  /* background: var(--white); */
+  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
+  text-align: center;
+  border-radius: 0.8rem;
+  margin-bottom: 1rem;
+  min-width: 220px;
+  flex: 1 1 220px;
+  color: var(--primary-red);
+  transition: transform 0.3s ease;
+}
+
+.contact > div:hover {
+  transform: translateY(-3px);
+}
+.contact p {
+  color: var(--text-dark);
+  margin-bottom: 0.8rem;
+  line-height: 1.5;
+}
+.contact4 p a {
+  text-decoration: none;
+  color: var(--text-dark);
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-radius: 0.3rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.contact4 p a:hover {
+  color: var(--primary-red);
+  transform: translateX(3px);
+}
