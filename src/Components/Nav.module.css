@@ -26,7 +26,14 @@ nav ul a:hover {
   padding: 10px 15px;
   border-radius: 5px;
   transform: translateX(3px);
-  transition: all 0.3s ease;
+  transition: 0.3s ease;
+}
+
+nav ul a.active {
+  color: white;
+  background-color: var(--primary-red);
+  padding: 10px 15px;
+  border-radius: 5px;
 }
 
 .outSideNav {
