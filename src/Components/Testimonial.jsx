@@ -2,7 +2,7 @@ import styles from "./Testimonial.module.css";
 import Stars from "./Star.jsx";
 import { useState, useEffect } from "react";
 import { collection, onSnapshot, query } from "firebase/firestore";
-import { db } from "../firebase";
+import { db } from "../Utils/firebase.js";
 import ErrorMsg from "./ErrorMsg.jsx";
 import Loading from "./Loading.jsx";
 

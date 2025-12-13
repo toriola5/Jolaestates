@@ -1,19 +1,13 @@
 import Style from "./Contact.module.css";
+import Map from "./Map";
+
 function Contact() {
   return (
     <section className={Style.contact} id="contact">
       <div className={Style.contactMap}>
         <h2>Find Us</h2>
-        <div className={Style.mapShell} data-map-loaded="false">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3964.1251100889585!2d3.3769655752301753!3d6.50584319348647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b8cf582e584eb%3A0x9094912e97da1c09!2s41%20Commercial%20Ave%2C%20Sabo%20yaba%2C%20Lagos%20101245%2C%20Lagos%2C%20Nigeria!5e0!3m2!1sen!2suk!4v1763354431055!5m2!1sen!2suk"
-            width="90%"
-            height="250"
-            style={{ border: 0, borderRadius: "0.5rem" }}
-            allowFullScreen=""
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          ></iframe>
+        <div className={Style.mapShell}>
+          <Map />
         </div>
       </div>
       <div className={Style.contact2}>
