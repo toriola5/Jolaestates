@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import { supabase } from "../Utils/Supabase";
 import styles from "./AdminShowProperties.module.css";
 
+//TODO : Add pagination for better performance with large datasets
+//TODO: Add edit functionality for properties
+//TODO: Improve UI/UX design
+//TODO: Add change status functionality (active, inactive, sold)
+//TODO : Add request a call back functionality
 function AdminShowProperties() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -1,5 +1,6 @@
 import Home from "./Pages/Home";
 import Admin from "./Pages/admin.jsx";
+import PublicShowProperties from "./Components/PublicShowProperties.jsx";
 import "./App.css";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -9,6 +10,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="*" element={<Home />} />
+        <Route path="/listings" element={<PublicShowProperties />} />
       </Routes>
     </BrowserRouter>
   );
