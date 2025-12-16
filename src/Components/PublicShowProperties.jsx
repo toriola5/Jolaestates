@@ -237,6 +237,19 @@ function PublicShowProperties() {
             <div className={styles.grid}>
               {properties.map((property) => (
                 <div key={property.id} className={styles.card}>
+                  <Helmet>
+                    <title>{property.title} - Jola Estates</title>
+                    <meta
+                      name="description"
+                      content={property.description.slice(0, 155)}
+                    />
+                    <meta property="og:title" content={property.title} />
+                    <meta property="og:image" content={property.images[0]} />
+                    <meta
+                      property="og:url"
+                      content={`https://jotestateagency.com/property/${property.id}`}
+                    />
+                  </Helmet>
                   <ImageGallery
                     images={property.images}
                     title={property.title}

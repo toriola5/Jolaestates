@@ -12,7 +12,6 @@ import { supabase } from "../Utils/Supabase";
 
 function PropertyUpload({ isEditMode = false }) {
   const { id, dispatch } = useContext(AdminContext);
-  console.log("PropertyUpload id:", id);
   const {
     handleSubmit,
     formData,

@@ -28,14 +28,13 @@ function Login() {
     setError(null);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
 
       if (error) throw error;
 
-      console.log("Login successful:", data);
       // Navigation will happen automatically via onAuthStateChange in Admin.jsx
     } catch (error) {
       console.error("Login error:", error);
