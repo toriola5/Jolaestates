@@ -1,6 +1,7 @@
 import Logo from "./Logo";
 import styles from "./Nav.module.css";
 import useWindowWidth from "../hooks/useWindowWidth";
+import { NavLink } from "react-router-dom";
 
 function Nav() {
   const [width, clicked, setClicked] = useWindowWidth();
@@ -40,6 +41,9 @@ function Nav() {
             </li>
             <li>
               <a href="#review">Review</a>
+            </li>
+            <li>
+              <NavLink to="/listings">Available listings</NavLink>
             </li>
           </ul>
         )}

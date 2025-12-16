@@ -1,3 +1,4 @@
+import { NavLink } from "react-router-dom";
 import styles from "./Hero.module.css";
 function Hero() {
   return (
@@ -11,14 +12,10 @@ function Hero() {
         <a href="#services-head">
           <button className={styles.primaryBtn}>Our Services</button>
         </a>
-        {/* <a
-          href="https://47379.estateagentsng.com"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+
+        <NavLink to="/listings">
           <button className={styles.secondaryBtn}>Available Listings</button>
-        </a> */}
-        {/* TODO : Create a new page for listings and link it here */}
+        </NavLink>
       </div>
     </div>
   );

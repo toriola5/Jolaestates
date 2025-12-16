@@ -10,6 +10,9 @@ function DashboardContent() {
       <AdminNav />
       {activepage === "SHOW_UPLOAD_FORM" && <PropertyUpload />}
       {activepage === "SHOW_PROPERTIES" && <AdminShowProperties />}
+      {activepage === "EDIT_PROPERTY_FORM" && (
+        <PropertyUpload isEditMode={true} />
+      )}
     </>
   );
 }

@@ -1,17 +1,20 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../Utils/Supabase";
 import styles from "./PublicShowProperties.module.css";
+import Loading from "./Loading.jsx";
+import { NavLink } from "react-router-dom";
 
-//TODO: Add pagination for better performance with large datasets
 //TODO: Improve UI/UX design
 //TODO: Add more filter options (price range, bedrooms, bathrooms, etc.)
 //TODO: Add sorting options (price low to high, newest listings, etc.)
-//TODO : Add navigation to the image gallery of each property {left and right arrows}
 
 function PublicShowProperties() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalProperties, setTotalProperties] = useState(0);
+  const itemsPerPage = 6;
   const [filter, setFilter] = useState({
     listingType: "all",
     propertyType: "all",
@@ -20,16 +23,43 @@ function PublicShowProperties() {
 
   useEffect(() => {
     fetchProperties();
-  }, [filter]);
+  }, [filter, currentPage]);
 
   const fetchProperties = async () => {
     try {
       setLoading(true);
+
+      // Build base query for counting
+      let countQuery = supabase
+        .from("properties")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active");
+
+      // Apply filters to count query
+      if (filter.listingType !== "all") {
+        countQuery = countQuery.eq("listing_type", filter.listingType);
+      }
+      if (filter.propertyType !== "all") {
+        countQuery = countQuery.eq("property_type", filter.propertyType);
+      }
+      if (filter.state !== "all") {
+        countQuery = countQuery.eq("state", filter.state);
+      }
+
+      // Get total count
+      const { count } = await countQuery;
+      setTotalProperties(count || 0);
+
+      // Build data query with pagination
+      const from = (currentPage - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
       let query = supabase
         .from("properties")
         .select("*")
         .eq("status", "active")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .range(from, to);
 
       // Apply filters
       if (filter.listingType !== "all") {
@@ -64,18 +94,58 @@ function PublicShowProperties() {
 
   const handleFilterChange = (filterType, value) => {
     setFilter({ ...filter, [filterType]: value });
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
-  if (loading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loading}>
-          <div className={styles.spinner}></div>
-          <p>Loading properties...</p>
-        </div>
-      </div>
-    );
-  }
+  const totalPages = Math.ceil(totalProperties / itemsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push("...");
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push("...");
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
+
+  //   if (loading) {
+  //     return (
+  //       //   <div className={styles.container}>
+  //       //     <div className={styles.loading}>
+  //       //       <div className={styles.spinner}></div>
+  //       //       <p>Loading properties...</p>
+  //       //     </div>
+  //       //   </div>
+  //       <Loading message="Loading properties..." />
+  //     );
+  //   }
 
   if (error) {
     return (
@@ -87,6 +157,7 @@ function PublicShowProperties() {
 
   return (
     <div className={styles.container}>
+      <NavLink to="/"> &larr; Back to Home</NavLink>
       <div className={styles.header}>
         <h2 className={styles.title}>Available Properties</h2>
         <p className={styles.subtitle}>
@@ -146,76 +217,155 @@ function PublicShowProperties() {
         </div>
       </div>
 
-      {properties.length === 0 ? (
+      {loading && <Loading message="Loading properties..." />}
+
+      {!loading && properties.length === 0 ? (
         <div className={styles.empty}>
           <p>No properties found matching your criteria.</p>
         </div>
       ) : (
-        <div className={styles.grid}>
-          {properties.map((property) => (
-            <div key={property.id} className={styles.card}>
-              <div className={styles.imageWrapper}>
-                {property.images && property.images.length > 0 ? (
-                  <img
-                    src={property.images[0]}
-                    alt={property.title}
-                    className={styles.image}
-                  />
-                ) : (
-                  <div className={styles.noImage}>No Image Available</div>
-                )}
-                <div className={styles.badge}>{property.listing_type}</div>
-              </div>
-
-              <div className={styles.content}>
-                <h3 className={styles.propertyTitle}>{property.title}</h3>
-                <p className={styles.location}>
-                  📍 {property.city}, {property.state}
-                </p>
-
-                <div className={styles.details}>
-                  <span className={styles.type}>{property.property_type}</span>
-                  {property.bedrooms && (
-                    <span>🛏️ {property.bedrooms} Beds</span>
-                  )}
-                  {property.bathrooms && (
-                    <span>🚿 {property.bathrooms} Baths</span>
-                  )}
-                  {property.size && <span>📏 {property.size} sqm</span>}
-                </div>
-
-                <p className={styles.description}>
-                  {property.description.length > 100
-                    ? `${property.description.substring(0, 100)}...`
-                    : property.description}
-                </p>
-
-                {property.features && property.features.length > 0 && (
-                  <div className={styles.features}>
-                    {property.features.slice(0, 3).map((feature, index) => (
-                      <span key={index} className={styles.featureTag}>
-                        {feature}
-                      </span>
-                    ))}
-                    {property.features.length > 3 && (
-                      <span className={styles.featureTag}>
-                        +{property.features.length - 3} more
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                <div className={styles.footer}>
-                  <div className={styles.price}>
-                    {formatPrice(property.price)}
-                  </div>
-                  <button className={styles.contactBtn}>Contact Us</button>
-                </div>
-              </div>
+        !loading && (
+          <>
+            <div className={styles.resultInfo}>
+              Showing {(currentPage - 1) * itemsPerPage + 1} -{" "}
+              {Math.min(currentPage * itemsPerPage, totalProperties)} of{" "}
+              {totalProperties} properties
             </div>
-          ))}
-        </div>
+
+            <div className={styles.grid}>
+              {properties.map((property) => (
+                <div key={property.id} className={styles.card}>
+                  <ImageGallery
+                    images={property.images}
+                    title={property.title}
+                    listingType={property.listing_type}
+                  />
+
+                  <div className={styles.content}>
+                    <h3 className={styles.propertyTitle}>{property.title}</h3>
+                    <p className={styles.location}>
+                      📍 {property.city}, {property.state}
+                    </p>
+
+                    <div className={styles.details}>
+                      <span className={styles.type}>
+                        {property.property_type}
+                      </span>
+                      {property.bedrooms && (
+                        <span>🛏️ {property.bedrooms} Beds</span>
+                      )}
+                      {property.bathrooms && (
+                        <span>🚿 {property.bathrooms} Baths</span>
+                      )}
+                      {property.size && <span>📏 {property.size} sqm</span>}
+                    </div>
+
+                    <p className={styles.description}>{property.description}</p>
+
+                    {property.features && property.features.length > 0 && (
+                      <div className={styles.features}>
+                        {property.features.map((feature, index) => (
+                          <span key={index} className={styles.featureTag}>
+                            {feature}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className={styles.footer}>
+                      <div className={styles.price}>
+                        {formatPrice(property.price)}
+                      </div>
+                      <a
+                        href={`https://wa.me/2348023388329?text=${encodeURIComponent(
+                          `Hello, I am interested in the property titled "${property.title}" at  ${property.address} ${property.city}, ${property.state}.`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <button className={styles.contactBtn}>
+                          Contact Us
+                        </button>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className={styles.pagination}>
+                <button
+                  className={styles.pageBtn}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  ← Previous
+                </button>
+
+                <div className={styles.pageNumbers}>
+                  {getPageNumbers().map((page, index) => (
+                    <button
+                      key={index}
+                      className={`${styles.pageNumber} ${
+                        page === currentPage ? styles.active : ""
+                      } ${page === "..." ? styles.dots : ""}`}
+                      onClick={() =>
+                        typeof page === "number" && handlePageChange(page)
+                      }
+                      disabled={page === "..."}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  className={styles.pageBtn}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+          </>
+        )
       )}
+    </div>
+  );
+}
+
+function ImageGallery({ images, title, listingType }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const handlePrevious = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? images.length - 1 : prevIndex - 1
+    );
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex === images.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  return (
+    <div className={styles.imageWrapper}>
+      {images && images.length > 0 ? (
+        <img src={images[currentIndex]} alt={title} className={styles.image} />
+      ) : (
+        <div className={styles.noImage}>No Image Available</div>
+      )}
+      <div className={styles.badge}>{listingType}</div>
+      <button className={styles.previousButtons} onClick={handlePrevious}>
+        &larr;
+      </button>
+      <button className={styles.nextButtons} onClick={handleNext}>
+        &rarr;
+      </button>
     </div>
   );
 }

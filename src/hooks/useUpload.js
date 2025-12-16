@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../Utils/Supabase";
+import { useEffect } from "react";
 
 function useUpload() {
   const initialFormData = {
@@ -22,6 +23,19 @@ function useUpload() {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
+  const [successful, setSuccessful] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  useEffect(
+    function () {
+      const success = setTimeout(() => {
+        setSuccessful(false);
+      }, 3000);
+
+      return () => clearTimeout(success);
+    },
+    [successful]
+  );
 
   const nigerianStates = [
     "Abia",
@@ -164,49 +178,114 @@ function useUpload() {
     setUploadError(null);
 
     try {
+      // Validation checks
+      if (!formData.title.trim()) {
+        throw new Error("Property title is required");
+      }
+      if (!formData.price || parseFloat(formData.price) <= 0) {
+        throw new Error("Valid price is required");
+      }
+      if (images.length === 0 && !isEditMode) {
+        throw new Error("At least one image is required");
+      }
+
+      // Validate image sizes (max 5MB per image)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      const oversizedImages = images.filter((img) => img.size > maxSize);
+      if (oversizedImages.length > 0) {
+        throw new Error(
+          `Some images exceed 5MB limit. Please compress or choose smaller images.`
+        );
+      }
+
+      // Validate image types
+      const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+      const invalidImages = images.filter(
+        (img) => !validTypes.includes(img.type)
+      );
+      if (invalidImages.length > 0) {
+        throw new Error("Only JPG, JPEG, PNG, and WebP images are allowed");
+      }
+
+      // Check authentication
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error(
+          "Session expired. Please log in again and try uploading."
+        );
+      }
+
       console.log("Property data:", formData);
       console.log("Images:", images);
 
-      // Upload images first
-      const imageUrls = await uploadMultipleImages(images);
+      // Upload images first with timeout protection
+      const uploadPromise = uploadMultipleImages(images);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error("Image upload timeout after 60 seconds")),
+          60000
+        )
+      );
+
+      const imageUrls = await Promise.race([uploadPromise, timeoutPromise]);
       console.log("Uploaded image URLs:", imageUrls);
 
       if (imageUrls.length === 0 && images.length > 0) {
-        throw new Error("Failed to upload images");
+        throw new Error(
+          "Failed to upload images. Check your internet connection and try again."
+        );
       }
 
       // Prepare property data for database
       const propertyData = {
-        title: formData.title,
+        title: formData.title.trim(),
         property_type: formData.propertyType,
         listing_type: formData.listingType,
         price: parseFloat(formData.price),
-        description: formData.description,
+        description: formData.description.trim(),
         bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
         bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
         size: formData.size ? parseFloat(formData.size) : null,
         state: formData.state,
-        city: formData.city,
-        address: formData.address,
+        city: formData.city.trim(),
+        address: formData.address.trim(),
         features: formData.features,
         images: imageUrls,
         created_at: new Date().toISOString(),
         status: "active",
       };
 
-      // Insert property into database
-      const { data, error } = await supabase
+      // Insert property into database with timeout
+      const dbPromise = supabase
         .from("properties")
         .insert([propertyData])
         .select();
 
+      const dbTimeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Database operation timeout")), 30000)
+      );
+
+      const { data, error } = await Promise.race([dbPromise, dbTimeoutPromise]);
+
       if (error) {
         console.error("Error saving property:", error);
-        throw new Error(`Failed to save property: ${error.message}`);
+
+        // Handle specific error types
+        if (error.code === "23505") {
+          throw new Error("This property already exists in the database");
+        } else if (error.code === "42501") {
+          throw new Error("Permission denied. Please contact administrator");
+        } else if (error.message.includes("JWT")) {
+          throw new Error("Session expired. Please log in again");
+        } else {
+          throw new Error(`Failed to save property: ${error.message}`);
+        }
       }
 
       console.log("Property saved successfully:", data);
-      alert("Property uploaded successfully!");
+      setSuccessful(true);
       setFormData(initialFormData);
       setImages([]);
       setImagePreviews([]);
@@ -231,6 +310,10 @@ function useUpload() {
     handleImageUpload,
     removeImage,
     handleSubmit,
+    successful,
+    setUploadError,
+    setFormData,
+    setIsEditMode,
   };
 }
 

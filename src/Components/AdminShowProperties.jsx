@@ -1,30 +1,68 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../Utils/Supabase";
 import styles from "./AdminShowProperties.module.css";
+import Loading from "./Loading.jsx";
+import MessageAlert from "./MessageAlert.jsx";
+import { useContext } from "react";
+import { AdminContext } from "../Contexts/AdminProvider.jsx";
 
-//TODO : Add pagination for better performance with large datasets
-//TODO: Add edit functionality for properties
 //TODO: Improve UI/UX design
-//TODO: Add change status functionality (active, inactive, sold)
 //TODO : Add request a call back functionality
+
 function AdminShowProperties() {
-  const [properties, setProperties] = useState([]);
+  // Get dispatch and message from context
+  const { dispatch, message, messageType } = useContext(AdminContext);
+
+  //§tate variables
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [properties, setProperties] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalProperties, setTotalProperties] = useState(0);
+  //Items per page
+  const itemsPerPage = 10;
 
+  //Fetch properties on page load and when currentPage changes
   useEffect(() => {
     fetchProperties();
-  }, []);
+  }, [currentPage]);
+
+  //Use effect to clear messages after 1 second
+  useEffect(
+    function () {
+      if (message) {
+        const timer = setTimeout(
+          () => dispatch({ type: "CLEAR_MESSAGE" }),
+          1000
+        );
+        return () => clearTimeout(timer);
+      }
+    },
+    [message, dispatch]
+  );
 
   const fetchProperties = async () => {
     try {
       setLoading(true);
+
+      // Get total count
+      const { count } = await supabase
+        .from("properties")
+        .select("*", { count: "exact", head: true });
+
+      setTotalProperties(count || 0);
+
+      // Get paginated data
+      const from = (currentPage - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
       const { data, error } = await supabase
         .from("properties")
         .select(
           "id, title, property_type, listing_type, price, state, city, bedrooms, bathrooms, status, created_at"
         )
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
 
@@ -47,10 +85,22 @@ function AdminShowProperties() {
 
       // Remove from local state
       setProperties(properties.filter((prop) => prop.id !== id));
-      alert("Property deleted successfully!");
+      dispatch({
+        type: "SET_MESSAGE",
+        payload: {
+          message: "Property deleted successfully!",
+          type: "success",
+        },
+      });
     } catch (error) {
       console.error("Error deleting property:", error);
-      alert(`Failed to delete property: ${error.message}`);
+      dispatch({
+        type: "SET_MESSAGE",
+        payload: {
+          message: `Failed to delete property: ${error.message}`,
+          type: "error",
+        },
+      });
     }
   };
 
@@ -69,8 +119,90 @@ function AdminShowProperties() {
     });
   };
 
+  const handleStatusToggle = async (id, currentStatus) => {
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
+
+    try {
+      const { error } = await supabase
+        .from("properties")
+        .update({ status: newStatus })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setProperties(
+        properties.map((prop) =>
+          prop.id === id ? { ...prop, status: newStatus } : prop
+        )
+      );
+      dispatch({
+        type: "SET_MESSAGE",
+        payload: {
+          message: `Property status updated to ${newStatus}`,
+          type: "success",
+        },
+      });
+    } catch (error) {
+      console.error("Error toggling status:", error);
+      dispatch({
+        type: "SET_MESSAGE",
+        payload: {
+          message: `Failed to update status: ${error.message}`,
+          type: "error",
+        },
+      });
+    }
+  };
+
+  function handleEdit(id) {
+    //Get form data of this id
+    dispatch({
+      type: "SET_ACTIVE_PAGE",
+      payload: { id: id, page: "EDIT_PROPERTY_FORM" },
+    });
+  }
+
+  const totalPages = Math.ceil(totalProperties / itemsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+
+    // Logic for displaying page numbers with ellipses
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push("...");
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push("...");
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
+
   if (loading) {
-    return <div className={styles.loading}>Loading properties...</div>;
+    return <Loading message="Loading properties..." />;
   }
 
   if (error) {
@@ -81,8 +213,17 @@ function AdminShowProperties() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h2>All Properties</h2>
-        <p className={styles.count}>Total: {properties.length} properties</p>
+        <p className={styles.count}>Total: {totalProperties} properties</p>
       </div>
+      {message && <MessageAlert message={message} type={messageType} />}
+
+      {!loading && properties.length > 0 && (
+        <div className={styles.resultInfo}>
+          Showing {(currentPage - 1) * itemsPerPage + 1} -{" "}
+          {Math.min(currentPage * itemsPerPage, totalProperties)} of{" "}
+          {totalProperties} properties
+        </div>
+      )}
 
       {properties.length === 0 ? (
         <div className={styles.empty}>
@@ -127,18 +268,70 @@ function AdminShowProperties() {
                     </span>
                   </td>
                   <td>{formatDate(property.created_at)}</td>
-                  <td>
+                  <td className={styles.actions}>
                     <button
                       onClick={() => handleDelete(property.id)}
                       className={styles.deleteBtn}
                     >
                       Delete
                     </button>
+                    <button
+                      className={styles.editBtn}
+                      onClick={() => handleEdit(property.id)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleStatusToggle(property.id, property.status)
+                      }
+                      className={styles.statusBtn}
+                    >
+                      {property.status === "active" ? "Deactivate" : "Activate"}
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && totalPages > 1 && (
+        <div className={styles.pagination}>
+          <button
+            className={styles.pageBtn}
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            ← Previous
+          </button>
+
+          <div className={styles.pageNumbers}>
+            {getPageNumbers().map((page, index) => (
+              <button
+                key={index}
+                className={`${styles.pageNumber} ${
+                  page === currentPage ? styles.active : ""
+                } ${page === "..." ? styles.dots : ""}`}
+                onClick={() =>
+                  typeof page === "number" && handlePageChange(page)
+                }
+                disabled={page === "..."}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+
+          <button
+            className={styles.pageBtn}
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next →
+          </button>
         </div>
       )}
     </div>

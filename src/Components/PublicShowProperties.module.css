@@ -1,5 +1,4 @@
 .container {
-  width: 100%;
   padding: 3rem 2rem;
   background-color: #f9fafb;
   min-height: 100vh;
@@ -30,8 +29,8 @@
   flex-wrap: wrap;
   margin-bottom: 3rem;
   padding: 1.5rem;
-  background-color: white;
-  border-radius: 12px;
+  background-color: var(--navy);
+
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -43,7 +42,7 @@
 
 .filterGroup label {
   font-weight: 600;
-  color: #374151;
+  color: white;
   font-size: 0.9375rem;
 }
 
@@ -160,12 +159,45 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background-color: #3b82f6;
+  background-color: var(--primary-red);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 6px;
   font-weight: 600;
   font-size: 0.875rem;
+}
+
+.previousButtons {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nextButtons {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .content {
@@ -240,7 +272,7 @@
 }
 
 .contactBtn {
-  background-color: #3b82f6;
+  background-color: var(--primary-red);
   color: white;
   padding: 0.75rem 1.5rem;
   border: none;
@@ -251,12 +283,97 @@
 }
 
 .contactBtn:hover {
-  background-color: #2563eb;
+  background-color: var(--dark-red);
   transform: translateY(-2px);
 }
 
 .contactBtn:active {
   transform: translateY(0);
+}
+
+/* Result Info */
+.resultInfo {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9375rem;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding: 2rem 0;
+}
+
+.pageBtn {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--navy);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9375rem;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background-color: #2a3550;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 34, 56, 0.2);
+}
+
+.pageBtn:disabled {
+  background-color: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pageNumbers {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.pageNumber {
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
+  background-color: white;
+  color: var(--navy);
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9375rem;
+}
+
+.pageNumber:hover:not(:disabled):not(.dots) {
+  border-color: var(--navy);
+  background-color: #f3f4f6;
+  transform: translateY(-2px);
+}
+
+.pageNumber.active {
+  background-color: var(--navy);
+  color: white;
+  border-color: var(--navy);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 34, 56, 0.2);
+}
+
+.pageNumber.dots {
+  border: none;
+  background: transparent;
+  cursor: default;
+  color: #6b7280;
 }
 
 /* Responsive Design */
@@ -295,5 +412,26 @@
 
   .contactBtn {
     width: 100%;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1.5rem 0;
+  }
+
+  .pageBtn {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .pageNumber {
+    min-width: 2.25rem;
+    height: 2.25rem;
+    font-size: 0.875rem;
+  }
+
+  .pageNumbers {
+    gap: 0.375rem;
   }
 }
