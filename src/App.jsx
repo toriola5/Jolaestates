@@ -1,5 +1,5 @@
 import Home from "./Pages/Home";
-import Admin from "./Pages/admin.jsx";
+import Admin from "./Pages/Admin.jsx";
 import PublicShowProperties from "./Components/PublicShowProperties.jsx";
 import "./App.css";
 
