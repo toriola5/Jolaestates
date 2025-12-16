@@ -45,6 +45,9 @@ function Nav() {
             <li>
               <NavLink to="/listings">Available listings</NavLink>
             </li>
+            <li>
+              <NavLink to="/admin">Admin Login</NavLink>
+            </li>
           </ul>
         )}
 
