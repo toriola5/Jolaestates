@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styles from "./Login.module.css";
 import { supabase } from "../Utils/Supabase";
+import { NavLink } from "react-router-dom";
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -48,6 +49,9 @@ function Login() {
 
   return (
     <div className={styles.loginContainer}>
+      <NavLink to="/" className={styles.homeLink}>
+        &larr; Back to Home
+      </NavLink>
       <div className={styles.loginCard}>
         <div className={styles.loginHeader}>
           <h2 className={styles.title}>Welcome Back</h2>

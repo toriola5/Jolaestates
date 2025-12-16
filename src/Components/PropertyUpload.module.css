@@ -42,7 +42,18 @@
   transition: background-color 0.2s ease, transform 0.1s ease;
   white-space: nowrap;
 }
-
+.homeLink {
+  position: absolute;
+  border: 1px solid white;
+  top: 1rem;
+  left: 1rem;
+  padding: 10px 15px;
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s ease;
+}
 .logoutButton:hover {
   background-color: #dc2626;
   transform: translateY(-2px);

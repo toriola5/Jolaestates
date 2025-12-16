@@ -74,6 +74,8 @@ function Nav() {
             <a href="#review" onClick={() => setClicked((x) => !x)}>
               Review
             </a>
+            <NavLink to="/listings">Available listings</NavLink>
+            <NavLink to="/admin">Admin Login</NavLink>
           </div>
         )}
       </nav>

@@ -157,7 +157,9 @@ function PublicShowProperties() {
 
   return (
     <div className={styles.container}>
-      <NavLink to="/"> &larr; Back to Home</NavLink>
+      <NavLink to="/" className={styles.homeLink}>
+        &larr; Back to Home
+      </NavLink>
       <div className={styles.header}>
         <h2 className={styles.title}>Available Properties</h2>
         <p className={styles.subtitle}>
