@@ -5,7 +5,7 @@ import { NavLink } from "react-router-dom";
 
 function Nav() {
   const [width, clicked, setClicked] = useWindowWidth();
-  const isMobile = width < 768;
+  const isMobile = width < 900;
   return (
     <>
       <nav className={styles.nav}>
