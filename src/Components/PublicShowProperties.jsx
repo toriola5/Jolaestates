@@ -237,7 +237,7 @@ function PublicShowProperties() {
             <div className={styles.grid}>
               {properties.map((property) => (
                 <div key={property.id} className={styles.card}>
-                  <Helmet>
+                  {/* <Helmet>
                     <title>{property.title} - Jola Estates</title>
                     <meta
                       name="description"
@@ -249,7 +249,7 @@ function PublicShowProperties() {
                       property="og:url"
                       content={`https://jotestateagency.com/property/${property.id}`}
                     />
-                  </Helmet>
+                  </Helmet> */}
                   <ImageGallery
                     images={property.images}
                     title={property.title}
