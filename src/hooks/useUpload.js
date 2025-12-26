@@ -16,6 +16,7 @@ function useUpload() {
     city: "",
     address: "",
     features: [],
+    toilet: "",
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -255,6 +256,7 @@ function useUpload() {
         images: imageUrls,
         created_at: new Date().toISOString(),
         status: "active",
+        toilet: formData.toilet ? parseInt(formData.toilet) : null,
       };
 
       // Insert property into database with timeout

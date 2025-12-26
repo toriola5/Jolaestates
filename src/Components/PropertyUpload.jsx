@@ -71,6 +71,7 @@ function PropertyUpload({ isEditMode = false }) {
       features: formData.features,
       updated_at: new Date().toISOString(),
       status: "active",
+      toilet: formData.toilet ? parseInt(formData.toilet) : null,
     };
     e.preventDefault();
     const { data, error } = await supabase
@@ -244,6 +245,22 @@ function PropertyUpload({ isEditMode = false }) {
                   onChange={handleChange}
                   className={styles.input}
                   placeholder="Number of bedrooms"
+                  min="0"
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="toilet" className={styles.label}>
+                  Toilets
+                </label>
+                <input
+                  type="number"
+                  id="toilet"
+                  name="toilet"
+                  value={formData.toilet}
+                  onChange={handleChange}
+                  className={styles.input}
+                  placeholder="Number of toilets"
                   min="0"
                 />
               </div>

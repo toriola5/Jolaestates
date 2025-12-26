@@ -272,6 +272,9 @@ function PublicShowProperties() {
                       {property.bathrooms && (
                         <span>🚿 {property.bathrooms} Baths</span>
                       )}
+                      {property.toilet && (
+                        <span>🚽 {property.toilet} Toilets</span>
+                      )}
                       {property.size && <span>📏 {property.size} sqm</span>}
                     </div>
 
@@ -375,12 +378,16 @@ function ImageGallery({ images, title, listingType }) {
         <div className={styles.noImage}>No Image Available</div>
       )}
       <div className={styles.badge}>{listingType}</div>
-      <button className={styles.previousButtons} onClick={handlePrevious}>
-        &larr;
-      </button>
-      <button className={styles.nextButtons} onClick={handleNext}>
-        &rarr;
-      </button>
+      {images.length > 1 && (
+        <button className={styles.previousButtons} onClick={handlePrevious}>
+          &larr;
+        </button>
+      )}
+      {images.length > 1 && (
+        <button className={styles.nextButtons} onClick={handleNext}>
+          &rarr;
+        </button>
+      )}
     </div>
   );
 }

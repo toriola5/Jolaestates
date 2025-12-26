@@ -59,7 +59,7 @@ function AdminShowProperties() {
       const { data, error } = await supabase
         .from("properties")
         .select(
-          "id, title, property_type, listing_type, price, state, city, bedrooms, bathrooms, status, created_at"
+          "id, title, property_type, listing_type, price, state, city, bedrooms, bathrooms, toilet, status, created_at"
         )
         .order("created_at", { ascending: false })
         .range(from, to);
@@ -241,6 +241,7 @@ function AdminShowProperties() {
                 <th>Location</th>
                 <th>Beds</th>
                 <th>Baths</th>
+                <th>Toilets</th>
                 <th>Status</th>
                 <th>Created</th>
                 <th>Actions</th>
@@ -260,6 +261,7 @@ function AdminShowProperties() {
                   </td>
                   <td>{property.bedrooms || "N/A"}</td>
                   <td>{property.bathrooms || "N/A"}</td>
+                  <td>{property.toilet || "N/A"}</td>
                   <td>
                     <span
                       className={`${styles.status} ${styles[property.status]}`}
