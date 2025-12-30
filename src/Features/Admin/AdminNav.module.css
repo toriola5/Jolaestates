@@ -51,8 +51,12 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.navBtn:active {
-  transform: translateY(0);
+/* React Router active link styling */
+.navBtn:global(.active),
+.navBtn.active {
+  background-color: white;
+  color: var(--navy);
+  border-color: white;
 }
 
 .logoutBtn {

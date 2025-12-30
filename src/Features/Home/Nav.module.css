@@ -29,7 +29,7 @@ nav ul a:hover {
   transition: 0.3s ease;
 }
 
-nav ul a.active {
+.ul a:global(.active) {
   color: white;
   background-color: var(--primary-red);
   padding: 10px 15px;

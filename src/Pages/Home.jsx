@@ -1,25 +1,27 @@
-import Nav from "../Components/Nav.jsx";
-import Hero from "../Components/Hero.jsx";
-import Services from "../Components/Services.jsx";
-import About from "../Components/About.jsx";
-import Blog from "../Components/Blog.jsx";
-import Testimonial from "../Components/Testimonial.jsx";
-import Faqs from "../Components/Faqs.jsx";
-import Review from "../Components/Review.jsx";
-import Contact from "../Components/Contact.jsx";
-import Credit from "../Components/Credit.jsx";
+import Nav from "../Features/Home/Nav.jsx";
+import Hero from "../Features/Home/Hero.jsx";
+import Services from "../Features/Home/Services.jsx";
+import About from "../Features/Home/About.jsx";
+import Blog from "../Features/Home/Blog.jsx";
+import Testimonial from "../Features/Home/Testimonial.jsx";
+import Faqs from "../Features/Home/Faqs.jsx";
+import Review from "../Features/Home/Review.jsx";
+import Contact from "../Features/Home/Contact.jsx";
+import Credit from "../Features/Home/Credit.jsx";
+import { Outlet } from "react-router-dom";
 function Home() {
   return (
     <div>
       <>
         <Nav />
-        <Hero />
-        <Services />
+        {/* <Hero /> */}
+        {/* <Services />
         <About />
         <Blog />
         <Faqs />
         <Testimonial />
-        <Review />
+        <Review /> */}
+        <Outlet />
         <Contact />
         <Credit />
       </>

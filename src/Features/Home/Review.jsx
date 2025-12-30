@@ -1,8 +1,9 @@
 import styles from "./Review.module.css";
-import useReview from "../hooks/useReview";
+import useReview from "../../hooks/useReview";
 import SubmitedReview from "./SubmitedReview";
-import Loading from "./Loading";
-import ErrorMsg from "./ErrorMsg";
+import Loading from "../../ui/Loading";
+import ErrorMsg from "../../ui/ErrorMsg";
+import Testimonial from "./Testimonial";
 
 function Review() {
   const [
@@ -126,6 +127,7 @@ function Review() {
           </div>
         </div>
       )}
+      <Testimonial />
     </>
   );
 }

@@ -1,100 +1,44 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "../Utils/Supabase";
-import { useEffect } from "react";
+import { updatePropertyByID } from "../Services/propertyQuery";
+import { AdminContext } from "../Contexts/AdminProvider";
+import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { uploadImageCloud } from "../Services/imageUpload";
+import { nigerianStates, propertyFeatures } from "../Utils/constants";
+import { preparePropertyData as prepareFormData } from "../Utils/helper";
 
 function useUpload() {
-  const initialFormData = {
-    title: "",
-    propertyType: "",
-    listingType: "",
-    price: "",
-    description: "",
-    bedrooms: "",
-    bathrooms: "",
-    size: "",
-    state: "",
-    city: "",
-    address: "",
-    features: [],
-    toilet: "",
-  };
+  const { dispatch } = useContext(AdminContext);
+  const navigate = useNavigate();
+  const initialFormData = useMemo(
+    () => ({
+      title: "",
+      propertyType: "",
+      listingType: "",
+      price: "",
+      description: "",
+      bedrooms: "",
+      bathrooms: "",
+      size: "",
+      state: "",
+      city: "",
+      address: "",
+      features: [],
+      toilet: "",
+    }),
+    []
+  );
 
   const [formData, setFormData] = useState(initialFormData);
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
-  const [successful, setSuccessful] = useState(false);
+
   const [isEditMode, setIsEditMode] = useState(false);
 
-  useEffect(
-    function () {
-      const success = setTimeout(() => {
-        setSuccessful(false);
-      }, 3000);
-
-      return () => clearTimeout(success);
-    },
-    [successful]
-  );
-
-  const nigerianStates = [
-    "Abia",
-    "Adamawa",
-    "Akwa Ibom",
-    "Anambra",
-    "Bauchi",
-    "Bayelsa",
-    "Benue",
-    "Borno",
-    "Cross River",
-    "Delta",
-    "Ebonyi",
-    "Edo",
-    "Ekiti",
-    "Enugu",
-    "FCT",
-    "Gombe",
-    "Imo",
-    "Jigawa",
-    "Kaduna",
-    "Kano",
-    "Katsina",
-    "Kebbi",
-    "Kogi",
-    "Kwara",
-    "Lagos",
-    "Nasarawa",
-    "Niger",
-    "Ogun",
-    "Ondo",
-    "Osun",
-    "Oyo",
-    "Plateau",
-    "Rivers",
-    "Sokoto",
-    "Taraba",
-    "Yobe",
-    "Zamfara",
-  ];
-
-  const propertyFeatures = [
-    "Swimming Pool",
-    "Gym",
-    "Security",
-    "Parking",
-    "Garden",
-    "Balcony",
-    "Air Conditioning",
-    "Furnished",
-    "Serviced",
-    "Pet Friendly",
-    "Power Supply",
-    "Water Supply",
-    "Internet",
-    "Elevator",
-    "CCTV",
-  ];
+  //effect would clear the success message after 3 seconds
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -103,43 +47,6 @@ function useUpload() {
       [name]: value,
     });
   };
-
-  async function uploadImageCloud(image) {
-    if (!image) return null;
-
-    try {
-      const fileExt = image.name.split(".").pop();
-      const fileName = `${Date.now()}-${Math.random()
-        .toString(36)
-        .substring(2, 15)}.${fileExt}`;
-      const filePath = `${fileName}`; // Remove 'properties/' folder prefix
-
-      // Try uploading without subfolder first
-      const { error } = await supabase.storage
-        .from("Jayeolaestates") // Use exact case as in your Supabase
-        .upload(filePath, image, {
-          cacheControl: "3600",
-          upsert: true,
-        });
-
-      if (error) {
-        console.error("Error uploading image:", error);
-        console.error("Error details:", JSON.stringify(error, null, 2));
-        throw error;
-      }
-
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("Jayeolaestates").getPublicUrl(filePath);
-
-      console.log("Upload successful. Public URL:", publicUrl);
-      return publicUrl;
-    } catch (error) {
-      console.error("Upload failed:", error);
-      return null;
-    }
-  }
 
   async function uploadMultipleImages(images) {
     const uploadPromises = images.map((image) => uploadImageCloud(image));
@@ -239,24 +146,13 @@ function useUpload() {
         );
       }
 
-      // Prepare property data for database
+      const preparedData = prepareFormData(formData);
+      /*Property data includes images and created_at because they are not part of formData 
+      the function would also be used in the editform upload */
       const propertyData = {
-        title: formData.title.trim(),
-        property_type: formData.propertyType,
-        listing_type: formData.listingType,
-        price: parseFloat(formData.price),
-        description: formData.description.trim(),
-        bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
-        bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
-        size: formData.size ? parseFloat(formData.size) : null,
-        state: formData.state,
-        city: formData.city.trim(),
-        address: formData.address.trim(),
-        features: formData.features,
+        ...preparedData,
         images: imageUrls,
         created_at: new Date().toISOString(),
-        status: "active",
-        toilet: formData.toilet ? parseInt(formData.toilet) : null,
       };
 
       // Insert property into database with timeout
@@ -272,25 +168,35 @@ function useUpload() {
       const { data, error } = await Promise.race([dbPromise, dbTimeoutPromise]);
 
       if (error) {
-        console.error("Error saving property:", error);
-
-        // Handle specific error types
-        if (error.code === "23505") {
-          throw new Error("This property already exists in the database");
-        } else if (error.code === "42501") {
-          throw new Error("Permission denied. Please contact administrator");
-        } else if (error.message.includes("JWT")) {
-          throw new Error("Session expired. Please log in again");
-        } else {
-          throw new Error(`Failed to save property: ${error.message}`);
+        switch (error.code) {
+          case "23505":
+            throw new Error("This property already exists in the database");
+          case "42501":
+            throw new Error("Permission denied. Please contact administrator");
+          default:
+            if (error.message.includes("JWT")) {
+              throw new Error("Session expired. Please log in again");
+            } else {
+              throw new Error(`Failed to save property: ${error.message}`);
+            }
         }
       }
 
+      if (!data || data.length === 0) {
+        throw new Error("No data returned from database after insertion");
+      }
+
+      // Handle specific error types
+
       console.log("Property saved successfully:", data);
-      setSuccessful(true);
       setFormData(initialFormData);
       setImages([]);
       setImagePreviews([]);
+      dispatch({
+        type: "SET_MESSAGE",
+        payload: { message: "Property uploaded successfully", type: "success" },
+      });
+      navigate("/admin/properties");
     } catch (error) {
       console.error("Upload error:", error);
       setUploadError(error.message || "Failed to upload property");
@@ -298,6 +204,30 @@ function useUpload() {
       setIsUploading(false);
     }
   };
+
+  async function handleEditUpload(e, id) {
+    e.preventDefault();
+    const preparedData = prepareFormData(formData, true); // true for edit mode
+    const propertyData = {
+      ...preparedData,
+      updated_at: new Date().toISOString(),
+    };
+    try {
+      const data = await updatePropertyByID(id, propertyData);
+      setFormData(data[0]);
+      dispatch({
+        type: "SET_MESSAGE",
+        payload: {
+          message: "Property edited successfully!",
+          type: "success",
+        },
+      });
+      navigate("/admin/properties");
+    } catch (error) {
+      console.error("Error updating property:", error);
+      setUploadError(error.message || "Failed to update property details.");
+    }
+  }
 
   return {
     formData,
@@ -312,10 +242,12 @@ function useUpload() {
     handleImageUpload,
     removeImage,
     handleSubmit,
-    successful,
     setUploadError,
     setFormData,
     setIsEditMode,
+    initialFormData,
+    prepareFormData,
+    handleEditUpload,
   };
 }
 

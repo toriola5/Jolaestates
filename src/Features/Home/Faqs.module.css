@@ -1,5 +1,5 @@
 .faqsContainer {
-  padding: 4rem 2rem;
+  padding: 5.5rem 2rem;
   background-color: #f9fafb;
 }
 .faqsContainer h2 {
@@ -95,7 +95,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .faqsContainer {
-    padding: 3rem 1rem;
+    padding: 5rem 1rem;
   }
 
   .title {

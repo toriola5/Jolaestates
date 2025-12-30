@@ -9,6 +9,7 @@
 }
 .serviceHead {
   padding-top: 4rem;
+  margin-bottom: 2rem;
 }
 .serviceHead h3 {
   color: var(--navy);

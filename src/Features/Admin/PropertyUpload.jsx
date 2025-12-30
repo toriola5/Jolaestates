@@ -1,17 +1,18 @@
 import styles from "./PropertyUpload.module.css";
-
-import useUpload from "../hooks/useUpload";
-import Loading from "./Loading";
-import ErrorMsg from "./ErrorMsg";
-import MessageAlert from "./MessageAlert";
-import { useContext, useEffect } from "react";
-import { AdminContext } from "../Contexts/AdminProvider";
-import { supabase } from "../Utils/Supabase";
+import useUpload from "../../hooks/useUpload";
+import Loading from "../../ui/Loading";
+import ErrorMsg from "../../ui/ErrorMsg";
+import { useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { queryPropertiesByID } from "../../Services/propertyQuery";
 
 //TODO : Sanitize and validate form inputs before submission.
 
 function PropertyUpload({ isEditMode = false }) {
-  const { id, dispatch } = useContext(AdminContext);
+  const { propertyId } = useParams();
+
+  // Use URL param first, then context id as fallback
+  const id = propertyId;
   const {
     handleSubmit,
     formData,
@@ -25,78 +26,41 @@ function PropertyUpload({ isEditMode = false }) {
     isUploading,
     uploadError,
     setUploadError,
-    successful,
     setFormData,
     setIsEditMode,
+    initialFormData,
+    handleEditUpload,
   } = useUpload();
 
   useEffect(() => {
     setIsEditMode(isEditMode);
-  }, []);
+    if (!isEditMode) {
+      // Reset form for new upload
+      setFormData(initialFormData);
+    }
+  }, [isEditMode, setIsEditMode, setFormData, initialFormData]);
 
   useEffect(() => {
     const fetchProperty = async () => {
       try {
-        const { data, error } = await supabase
-          .from("properties")
-          .select("*")
-          .eq("id", id)
-          .single();
-
-        if (error) throw error;
-        setFormData(data);
+        const data = await queryPropertiesByID(id);
+        setFormData({
+          ...data,
+          propertyType: data.property_type,
+          listingType: data.listing_type,
+        });
       } catch (error) {
         console.error("Error fetching property:", error);
+        setUploadError(
+          error.message || "Failed to fetch property details for editing."
+        );
       }
     };
 
     if (isEditMode) {
       fetchProperty();
     }
-  }, [id, isEditMode, setFormData]);
-
-  async function handleEditUpload(e) {
-    const propertyData = {
-      title: formData.title.trim(),
-      property_type: formData.propertyType,
-      listing_type: formData.listingType,
-      price: parseFloat(formData.price),
-      description: formData.description.trim(),
-      bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
-      bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
-      size: formData.size ? parseFloat(formData.size) : null,
-      state: formData.state,
-      city: formData.city.trim(),
-      address: formData.address.trim(),
-      features: formData.features,
-      updated_at: new Date().toISOString(),
-      status: "active",
-      toilet: formData.toilet ? parseInt(formData.toilet) : null,
-    };
-    e.preventDefault();
-    const { data, error } = await supabase
-      .from("properties")
-      .update(propertyData)
-      .eq("id", id)
-      .select();
-
-    if (error) {
-      setUploadError(error.message);
-    } else {
-      setFormData(data[0]);
-      dispatch({
-        type: "SET_ACTIVE_PAGE",
-        payload: { page: "SHOW_PROPERTIES" },
-      });
-      dispatch({
-        type: "SET_MESSAGE",
-        payload: {
-          message: "Property edited successfully!",
-          type: "success",
-        },
-      });
-    }
-  }
+  }, [id, isEditMode, setFormData, setUploadError]); // Now uses the combined id
 
   if (isUploading) return <Loading message="Uploading property..." />;
 
@@ -107,15 +71,6 @@ function PropertyUpload({ isEditMode = false }) {
   return (
     <div className={styles.uploadContainer}>
       <div className={styles.uploadContent}>
-        {successful && (
-          //   <div className={styles.successMessage}>
-          //     Property uploaded successfully!
-          //   </div>
-          <MessageAlert
-            type="success"
-            message="Property uploaded successfully!"
-          />
-        )}
         <div className={styles.header}>
           <div>
             <h2 className={styles.title}>
@@ -425,7 +380,7 @@ function PropertyUpload({ isEditMode = false }) {
           )}
           {isEditMode ? (
             <button
-              onClick={(e) => handleEditUpload(e)}
+              onClick={(e) => handleEditUpload(e, id)}
               className={styles.submitButton}
             >
               Edit Property

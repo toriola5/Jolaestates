@@ -9,10 +9,9 @@ function Hero() {
         we build futures.
       </h1>
       <div className={styles.actionables}>
-        <a href="#services-head">
+        <NavLink to="/services">
           <button className={styles.primaryBtn}>Our Services</button>
-        </a>
-
+        </NavLink>
         <NavLink to="/listings">
           <button className={styles.secondaryBtn}>Available Listings</button>
         </NavLink>

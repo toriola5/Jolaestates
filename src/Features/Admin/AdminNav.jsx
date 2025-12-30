@@ -1,11 +1,9 @@
-import { supabase } from "../Utils/Supabase";
-import { useContext } from "react";
-import { AdminContext } from "../Contexts/AdminProvider";
+import { supabase } from "../../Utils/Supabase";
+
 import styles from "./AdminNav.module.css";
 import { NavLink } from "react-router-dom";
 
 function AdminNav() {
-  const { dispatch } = useContext(AdminContext);
   const handleLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -23,28 +21,12 @@ function AdminNav() {
         </div>
 
         <div className={styles.navButtons}>
-          <button
-            className={styles.navBtn}
-            onClick={() =>
-              dispatch({
-                type: "SET_ACTIVE_PAGE",
-                payload: { page: "SHOW_PROPERTIES" },
-              })
-            }
-          >
+          <NavLink to="/admin/properties" className={styles.navBtn}>
             📋 Show Properties
-          </button>
-          <button
-            className={styles.navBtn}
-            onClick={() =>
-              dispatch({
-                type: "SET_ACTIVE_PAGE",
-                payload: { page: "SHOW_UPLOAD_FORM" },
-              })
-            }
-          >
+          </NavLink>
+          <NavLink to="/admin/upload-property" className={styles.navBtn}>
             ➕ Add Listings
-          </button>
+          </NavLink>
           <NavLink to="/" className={styles.navBtn}>
             &larr; Home
           </NavLink>

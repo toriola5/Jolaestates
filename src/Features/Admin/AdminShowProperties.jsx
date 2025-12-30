@@ -1,10 +1,17 @@
-import { useState, useEffect } from "react";
-import { supabase } from "../Utils/Supabase";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "../../Utils/Supabase.js";
 import styles from "./AdminShowProperties.module.css";
-import Loading from "./Loading.jsx";
-import MessageAlert from "./MessageAlert.jsx";
+import Loading from "../../ui/Loading.jsx";
+import MessageAlert from "../../ui/MessageAlert.jsx";
 import { useContext } from "react";
-import { AdminContext } from "../Contexts/AdminProvider.jsx";
+import { AdminContext } from "../../Contexts/AdminProvider.jsx";
+import { Link } from "react-router-dom";
+import {
+  queryAdminProperties,
+  getTotalPropertiesCount,
+  deletePropertyByID,
+} from "../../Services/propertyQuery.js";
+import { formatPrice, formatDate, getPageNumbers } from "../../Utils/helper.js";
 
 //TODO: Improve UI/UX design
 //TODO : Add request a call back functionality
@@ -22,18 +29,44 @@ function AdminShowProperties() {
   //Items per page
   const itemsPerPage = 10;
 
+  const fetchProperties = useCallback(
+    async function fetchProperties() {
+      try {
+        setLoading(true);
+
+        const count = await getTotalPropertiesCount();
+
+        setTotalProperties(count || 0);
+
+        // Get paginated data
+        const from = (currentPage - 1) * itemsPerPage;
+        const to = from + itemsPerPage - 1;
+
+        const data = await queryAdminProperties(from, to);
+        setProperties(data || []);
+      } catch (error) {
+        console.error("Error fetching properties:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentPage]
+  );
+
   //Fetch properties on page load and when currentPage changes
   useEffect(() => {
     fetchProperties();
-  }, [currentPage]);
+  }, [fetchProperties, currentPage]);
 
-  //Use effect to clear messages after 1 second
+  /*Use effect clear the pop up message initieated by functions 
+  like delete and status toggle */
   useEffect(
     function () {
       if (message) {
         const timer = setTimeout(
           () => dispatch({ type: "CLEAR_MESSAGE" }),
-          1000
+          2000
         );
         return () => clearTimeout(timer);
       }
@@ -41,47 +74,12 @@ function AdminShowProperties() {
     [message, dispatch]
   );
 
-  const fetchProperties = async () => {
-    try {
-      setLoading(true);
-
-      // Get total count
-      const { count } = await supabase
-        .from("properties")
-        .select("*", { count: "exact", head: true });
-
-      setTotalProperties(count || 0);
-
-      // Get paginated data
-      const from = (currentPage - 1) * itemsPerPage;
-      const to = from + itemsPerPage - 1;
-
-      const { data, error } = await supabase
-        .from("properties")
-        .select(
-          "id, title, property_type, listing_type, price, state, city, bedrooms, bathrooms, toilet, status, created_at"
-        )
-        .order("created_at", { ascending: false })
-        .range(from, to);
-
-      if (error) throw error;
-
-      setProperties(data || []);
-    } catch (error) {
-      console.error("Error fetching properties:", error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this property?")) return;
 
     try {
-      const { error } = await supabase.from("properties").delete().eq("id", id);
-
-      if (error) throw error;
+      // const { error } = await supabase.from("properties").delete().eq("id", id);
+      await deletePropertyByID(id);
 
       // Remove from local state
       setProperties(properties.filter((prop) => prop.id !== id));
@@ -102,21 +100,6 @@ function AdminShowProperties() {
         },
       });
     }
-  };
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(price);
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-NG", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   const handleStatusToggle = async (id, currentStatus) => {
@@ -154,51 +137,11 @@ function AdminShowProperties() {
     }
   };
 
-  function handleEdit(id) {
-    //Get form data of this id
-    dispatch({
-      type: "SET_ACTIVE_PAGE",
-      payload: { id: id, page: "EDIT_PROPERTY_FORM" },
-    });
-  }
-
   const totalPages = Math.ceil(totalProperties / itemsPerPage);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-
-    // Logic for displaying page numbers with ellipses
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) pages.push(i);
-        pages.push("...");
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1);
-        pages.push("...");
-        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
-      } else {
-        pages.push(1);
-        pages.push("...");
-        pages.push(currentPage - 1);
-        pages.push(currentPage);
-        pages.push(currentPage + 1);
-        pages.push("...");
-        pages.push(totalPages);
-      }
-    }
-
-    return pages;
   };
 
   if (loading) {
@@ -277,12 +220,12 @@ function AdminShowProperties() {
                     >
                       Delete
                     </button>
-                    <button
+                    <Link
+                      to={`/admin/edit-property/${property.id}`}
                       className={styles.editBtn}
-                      onClick={() => handleEdit(property.id)}
                     >
                       Edit
-                    </button>
+                    </Link>
                     <button
                       onClick={() =>
                         handleStatusToggle(property.id, property.status)
@@ -311,7 +254,7 @@ function AdminShowProperties() {
           </button>
 
           <div className={styles.pageNumbers}>
-            {getPageNumbers().map((page, index) => (
+            {getPageNumbers(currentPage, totalPages).map((page, index) => (
               <button
                 key={index}
                 className={`${styles.pageNumber} ${

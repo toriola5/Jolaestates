@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styles from "./Login.module.css";
-import { supabase } from "../Utils/Supabase";
+import { supabase } from "../../Utils/Supabase";
 import { NavLink } from "react-router-dom";
 
 function Login() {

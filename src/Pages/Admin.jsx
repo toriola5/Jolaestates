@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import Login from "../Components/Login";
+import Login from "../Features/Admin/Login";
 import { supabase } from "../Utils/Supabase";
-import Loading from "../Components/Loading";
-import Dashboard from "../Components/Dashboard";
+import Loading from "../ui/Loading";
+import { Outlet } from "react-router-dom";
+import AdminNav from "../Features/Admin/AdminNav";
+import { AdminProvider } from "../Contexts/AdminProvider";
 
 function Admin() {
   const [session, setSession] = useState(null);
@@ -25,11 +27,19 @@ function Admin() {
     return () => subscription.unsubscribe();
   }, []);
 
-  if (loading) {
-    return <Loading />;
-  }
+  if (loading) return <Loading />;
 
-  return <>{session ? <Dashboard /> : <Login />}</>;
+  // If no session, show login within this component (not navigate away)
+  if (!session) return <Login />;
+
+  return (
+    <>
+      <AdminProvider>
+        <AdminNav />
+        <Outlet />
+      </AdminProvider>
+    </>
+  );
 }
 
 export default Admin;

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+/* Custom hook to track window width and a clicked state it is used in the nav bar to track
+the width of the nav bar for to know if it is a moblie or desktop view */
 function useWindowWidth() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [clicked, setClicked] = useState(false);
