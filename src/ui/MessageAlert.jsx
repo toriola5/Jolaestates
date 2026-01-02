@@ -1,4 +1,5 @@
 import styles from "./MessageAlert.module.css";
+
 function MessageAlert({ type, message }) {
   return (
     <div

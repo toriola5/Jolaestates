@@ -3,9 +3,7 @@ import { supabase } from "../../Utils/Supabase.js";
 import styles from "./AdminShowProperties.module.css";
 import Loading from "../../ui/Loading.jsx";
 import MessageAlert from "../../ui/MessageAlert.jsx";
-import { useContext } from "react";
-import { AdminContext } from "../../Contexts/AdminProvider.jsx";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   queryAdminProperties,
   getTotalPropertiesCount,
@@ -17,9 +15,9 @@ import { formatPrice, formatDate, getPageNumbers } from "../../Utils/helper.js";
 //TODO : Add request a call back functionality
 
 function AdminShowProperties() {
-  // Get dispatch and message from context
-  const { dispatch, message, messageType } = useContext(AdminContext);
-
+  const params = useParams();
+  const messageParam = params.message;
+  const [message, setMessage] = useState({ type: null, content: null });
   //§tate variables
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -59,20 +57,33 @@ function AdminShowProperties() {
     fetchProperties();
   }, [fetchProperties, currentPage]);
 
-  /*Use effect clear the pop up message initieated by functions 
-  like delete and status toggle */
-  useEffect(
-    function () {
-      if (message) {
-        const timer = setTimeout(
-          () => dispatch({ type: "CLEAR_MESSAGE" }),
-          2000
-        );
-        return () => clearTimeout(timer);
-      }
-    },
-    [message, dispatch]
-  );
+  useEffect(() => {
+    if (messageParam === "1") {
+      setMessage({
+        type: "success",
+        content: "Property uploaded successfully!",
+      });
+    }
+    if (messageParam === "2") {
+      setMessage({
+        type: "success",
+        content: "Property updated successfully!",
+      });
+    }
+  }, [messageParam]);
+
+  // Auto-clear messages after 3 seconds
+  useEffect(() => {
+    if (message.content) {
+      const timer = setTimeout(() => {
+        setMessage({ type: null, content: null });
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [message.content]);
+
+  // Console log success message from uploadProperty action
 
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this property?")) return;
@@ -83,22 +94,20 @@ function AdminShowProperties() {
 
       // Remove from local state
       setProperties(properties.filter((prop) => prop.id !== id));
-      dispatch({
-        type: "SET_MESSAGE",
-        payload: {
-          message: "Property deleted successfully!",
-          type: "success",
-        },
-      });
+
+      setMessage((message) => ({
+        ...message,
+        type: "success",
+        content: "Property deleted successfully!",
+      }));
     } catch (error) {
       console.error("Error deleting property:", error);
-      dispatch({
-        type: "SET_MESSAGE",
-        payload: {
-          message: `Failed to delete property: ${error.message}`,
-          type: "error",
-        },
-      });
+
+      setMessage((message) => ({
+        ...message,
+        type: "error",
+        content: `Failed to delete property: ${error.message}`,
+      }));
     }
   };
 
@@ -118,21 +127,17 @@ function AdminShowProperties() {
           prop.id === id ? { ...prop, status: newStatus } : prop
         )
       );
-      dispatch({
-        type: "SET_MESSAGE",
-        payload: {
-          message: `Property status updated to ${newStatus}`,
-          type: "success",
-        },
+
+      setMessage({
+        type: "success",
+        content: `Property status updated to ${newStatus}`,
       });
     } catch (error) {
       console.error("Error toggling status:", error);
-      dispatch({
-        type: "SET_MESSAGE",
-        payload: {
-          message: `Failed to update status: ${error.message}`,
-          type: "error",
-        },
+
+      setMessage({
+        type: "error",
+        content: `Failed to update status: ${error.message}`,
       });
     }
   };
@@ -158,8 +163,9 @@ function AdminShowProperties() {
         <h2>All Properties</h2>
         <p className={styles.count}>Total: {totalProperties} properties</p>
       </div>
-      {message && <MessageAlert message={message} type={messageType} />}
-
+      {message.type && (
+        <MessageAlert message={message.content} type={message.type} />
+      )}
       {!loading && properties.length > 0 && (
         <div className={styles.resultInfo}>
           Showing {(currentPage - 1) * itemsPerPage + 1} -{" "}

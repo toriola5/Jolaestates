@@ -15,6 +15,12 @@ import About from "./Features/Home/About.jsx";
 import Blog from "./Features/Home/Blog.jsx";
 import Faqs from "./Features/Home/Faqs.jsx";
 import Review from "./Features/Home/Review.jsx";
+import {
+  uploadReview,
+  UploadProperty,
+  loginAction,
+} from "./Services/actions.js";
+import Login from "./Features/Admin/Login.jsx";
 
 const router = createBrowserRouter([
   {
@@ -45,6 +51,7 @@ const router = createBrowserRouter([
       {
         path: "review",
         element: <Review />,
+        action: uploadReview,
       },
       {
         path: "faqs",
@@ -64,14 +71,25 @@ const router = createBrowserRouter([
       {
         path: "upload-property",
         element: <PropertyUpload isEditMode={false} />,
+        action: UploadProperty,
       },
       {
         path: "edit-property/:propertyId",
         element: <PropertyUpload isEditMode={true} />,
+        action: UploadProperty,
+      },
+      {
+        path: "properties/:message",
+        element: <AdminShowProperties />,
       },
       {
         path: "properties",
         element: <AdminShowProperties />,
+      },
+      {
+        path: "login",
+        element: <Login />,
+        action: loginAction,
       },
     ],
   },

@@ -22,15 +22,20 @@ export const preparePropertyData = (formData, isEdit = false) => {
     listing_type: formData.listingType,
     price: parseFloat(formData.price),
     description: formData.description.trim(),
-    bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
-    bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
-    size: formData.size ? parseFloat(formData.size) : null,
+    bedrooms: Number(formData?.bedrooms) ? parseInt(formData.bedrooms) : null,
+    bathrooms: Number(formData?.bathrooms)
+      ? parseInt(formData.bathrooms)
+      : null,
+    size: Number(formData?.size) ? parseFloat(formData.size) : null,
     state: formData.state,
     city: formData.city.trim(),
     address: formData.address.trim(),
     features: formData.features,
     status: "active",
-    toilet: formData.toilet ? parseInt(formData.toilet) : null,
+    toilet:
+      formData.toilet && formData.toilet !== "0"
+        ? parseInt(formData.toilet)
+        : null,
   };
 
   if (isEdit) {

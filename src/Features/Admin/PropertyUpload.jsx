@@ -3,33 +3,33 @@ import useUpload from "../../hooks/useUpload";
 import Loading from "../../ui/Loading";
 import ErrorMsg from "../../ui/ErrorMsg";
 import { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useActionData, useParams } from "react-router-dom";
 import { queryPropertiesByID } from "../../Services/propertyQuery";
+import { Form, useNavigation } from "react-router-dom";
 
 //TODO : Sanitize and validate form inputs before submission.
 
 function PropertyUpload({ isEditMode = false }) {
   const { propertyId } = useParams();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+  const message = useActionData();
 
   // Use URL param first, then context id as fallback
   const id = propertyId;
   const {
-    handleSubmit,
     formData,
-    handleChange,
     nigerianStates,
     propertyFeatures,
     handleFeatureToggle,
     handleImageUpload,
     imagePreviews,
     removeImage,
-    isUploading,
     uploadError,
     setUploadError,
     setFormData,
     setIsEditMode,
     initialFormData,
-    handleEditUpload,
   } = useUpload();
 
   useEffect(() => {
@@ -62,14 +62,15 @@ function PropertyUpload({ isEditMode = false }) {
     }
   }, [id, isEditMode, setFormData, setUploadError]); // Now uses the combined id
 
-  if (isUploading) return <Loading message="Uploading property..." />;
-
   if (uploadError)
     return (
       <ErrorMsg message={uploadError} setError={() => setUploadError(null)} />
     );
   return (
     <div className={styles.uploadContainer}>
+      {message?.submitError && (
+        <p className={styles.errorMessage}>{` ** ${message.submitError}`}</p>
+      )}
       <div className={styles.uploadContent}>
         <div className={styles.header}>
           <div>
@@ -84,7 +85,16 @@ function PropertyUpload({ isEditMode = false }) {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.uploadForm}>
+        <Form
+          method="POST"
+          action={
+            isEditMode ? `/admin/edit-property/${id}` : "/admin/upload-property"
+          }
+          className={styles.uploadForm}
+          encType="multipart/form-data"
+        >
+          <input type="hidden" name="propertyId" value={id || ""} />
+
           {/* Basic Information */}
           <div className={styles.section}>
             <h3 className={styles.sectionTitle}>Basic Information</h3>
@@ -97,8 +107,8 @@ function PropertyUpload({ isEditMode = false }) {
                 type="text"
                 id="title"
                 name="title"
-                value={formData.title}
-                onChange={handleChange}
+                defaultValue={formData.title}
+                // onChange={handleChange}
                 required
                 className={styles.input}
                 placeholder="e.g., Luxury 3 Bedroom Apartment"
@@ -113,10 +123,11 @@ function PropertyUpload({ isEditMode = false }) {
                 <select
                   id="propertyType"
                   name="propertyType"
-                  value={formData.propertyType}
-                  onChange={handleChange}
+                  defaultValue={formData.propertyType}
+                  // onChange={handleChange}
                   required
                   className={styles.select}
+                  key={formData.propertyType}
                 >
                   <option value="">Select Type</option>
                   <option value="Apartment">Apartment</option>
@@ -137,10 +148,12 @@ function PropertyUpload({ isEditMode = false }) {
                 <select
                   id="listingType"
                   name="listingType"
-                  value={formData.listingType}
-                  onChange={handleChange}
+                  // value={formData.listingType}
+                  defaultValue={formData.listingType}
+                  // onChange={handleChange}
                   required
                   className={styles.select}
+                  key={formData.listingType}
                 >
                   <option value="">Select Type</option>
                   <option value="For Sale">For Sale</option>
@@ -158,8 +171,9 @@ function PropertyUpload({ isEditMode = false }) {
                 type="number"
                 id="price"
                 name="price"
-                value={formData.price}
-                onChange={handleChange}
+                // value={formData.price}
+                defaultValue={formData.price}
+                // onChange={handleChange}
                 required
                 className={styles.input}
                 placeholder="Enter price in Naira"
@@ -173,8 +187,9 @@ function PropertyUpload({ isEditMode = false }) {
               <textarea
                 id="description"
                 name="description"
-                value={formData.description}
-                onChange={handleChange}
+                defaultValue={formData.description}
+                // value={formData.description}
+                // onChange={handleChange}
                 required
                 className={styles.textarea}
                 placeholder="Describe the property..."
@@ -196,8 +211,9 @@ function PropertyUpload({ isEditMode = false }) {
                   type="number"
                   id="bedrooms"
                   name="bedrooms"
-                  value={formData.bedrooms}
-                  onChange={handleChange}
+                  defaultValue={formData.bedrooms}
+                  // value={formData.bedrooms}
+                  // onChange={handleChange}
                   className={styles.input}
                   placeholder="Number of bedrooms"
                   min="0"
@@ -212,8 +228,9 @@ function PropertyUpload({ isEditMode = false }) {
                   type="number"
                   id="toilet"
                   name="toilet"
-                  value={formData.toilet}
-                  onChange={handleChange}
+                  defaultValue={formData.toilet}
+                  // value={formData.toilet}
+                  // onChange={handleChange}
                   className={styles.input}
                   placeholder="Number of toilets"
                   min="0"
@@ -228,8 +245,9 @@ function PropertyUpload({ isEditMode = false }) {
                   type="number"
                   id="bathrooms"
                   name="bathrooms"
-                  value={formData.bathrooms}
-                  onChange={handleChange}
+                  defaultValue={formData.bathrooms}
+                  // value={formData.bathrooms}
+                  // onChange={handleChange}
                   className={styles.input}
                   placeholder="Number of bathrooms"
                   min="0"
@@ -244,8 +262,9 @@ function PropertyUpload({ isEditMode = false }) {
                   type="number"
                   id="size"
                   name="size"
-                  value={formData.size}
-                  onChange={handleChange}
+                  defaultValue={formData.size}
+                  // value={formData.size}
+                  // onChange={handleChange}
                   className={styles.input}
                   placeholder="Size in square meters"
                 />
@@ -263,10 +282,12 @@ function PropertyUpload({ isEditMode = false }) {
                   State *
                 </label>
                 <select
+                  key={formData.state}
                   id="state"
                   name="state"
-                  value={formData.state}
-                  onChange={handleChange}
+                  defaultValue={formData.state}
+                  // value={formData.state}
+                  // onChange={handleChange}
                   required
                   className={styles.select}
                 >
@@ -287,8 +308,9 @@ function PropertyUpload({ isEditMode = false }) {
                   type="text"
                   id="city"
                   name="city"
-                  value={formData.city}
-                  onChange={handleChange}
+                  defaultValue={formData.city}
+                  // value={formData.city}
+                  // onChange={handleChange}
                   required
                   className={styles.input}
                   placeholder="Enter city"
@@ -304,8 +326,9 @@ function PropertyUpload({ isEditMode = false }) {
                 type="text"
                 id="address"
                 name="address"
-                value={formData.address}
-                onChange={handleChange}
+                defaultValue={formData.address}
+                // value={formData.address}
+                // onChange={handleChange}
                 required
                 className={styles.input}
                 placeholder="Enter full address"
@@ -321,7 +344,9 @@ function PropertyUpload({ isEditMode = false }) {
                 <label key={feature} className={styles.featureLabel}>
                   <input
                     type="checkbox"
+                    name="features"
                     checked={formData.features.includes(feature)}
+                    value={feature}
                     onChange={() => handleFeatureToggle(feature)}
                     className={styles.checkbox}
                   />
@@ -340,6 +365,7 @@ function PropertyUpload({ isEditMode = false }) {
                 <input
                   type="file"
                   id="images"
+                  name="images"
                   accept="image/*"
                   multiple
                   onChange={handleImageUpload}
@@ -352,6 +378,11 @@ function PropertyUpload({ isEditMode = false }) {
                     Upload multiple images
                   </span>
                 </label>
+                {message?.imageError && (
+                  <p
+                    className={styles.errorMessage}
+                  >{` ** ${message.imageError}`}</p>
+                )}
               </div>
 
               {imagePreviews.length > 0 && (
@@ -374,19 +405,24 @@ function PropertyUpload({ isEditMode = false }) {
           )}
 
           {isEditMode ? null : (
-            <button type="submit" className={styles.submitButton}>
-              Upload Property
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={styles.submitButton}
+            >
+              {isSubmitting ? "Uploading..." : "Upload Property"}
             </button>
           )}
           {isEditMode ? (
             <button
-              onClick={(e) => handleEditUpload(e, id)}
+              disabled={isSubmitting}
+              // onClick={(e) => handleEditUpload(e, id)}
               className={styles.submitButton}
             >
-              Edit Property
+              {isSubmitting ? "Editing..." : "Edit Property"}
             </button>
           ) : null}
-        </form>
+        </Form>
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import { supabase } from "../Utils/Supabase";
 import Loading from "../ui/Loading";
 import { Outlet } from "react-router-dom";
 import AdminNav from "../Features/Admin/AdminNav";
-import { AdminProvider } from "../Contexts/AdminProvider";
 
 function Admin() {
   const [session, setSession] = useState(null);
@@ -34,10 +33,8 @@ function Admin() {
 
   return (
     <>
-      <AdminProvider>
-        <AdminNav />
-        <Outlet />
-      </AdminProvider>
+      <AdminNav />
+      <Outlet />
     </>
   );
 }

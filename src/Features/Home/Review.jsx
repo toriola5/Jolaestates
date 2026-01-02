@@ -1,31 +1,24 @@
 import styles from "./Review.module.css";
 import useReview from "../../hooks/useReview";
 import SubmitedReview from "./SubmitedReview";
-import Loading from "../../ui/Loading";
-import ErrorMsg from "../../ui/ErrorMsg";
 import Testimonial from "./Testimonial";
+import { Form, useActionData, useNavigation } from "react-router-dom";
 
 function Review() {
-  const [
-    formData,
-    hoveredRating,
-    handleChange,
-    handleRatingClick,
-    setHoveredRating,
-    handleSubmit,
-    isLoading,
-    isSubmitted,
-    error,
-    setError,
-  ] = useReview();
+  const [rating, hoveredRating, handleRatingClick, setHoveredRating] =
+    useReview();
 
+  const message = useActionData();
+  const navigate = useNavigation();
+  const isSubmitting = navigate.state === "submitting";
   return (
     <>
-      {isLoading && <Loading />}
-      {!isLoading && error && <ErrorMsg message={error} setError={setError} />}
-      {!isLoading && !error && isSubmitted && <SubmitedReview />}
-      {!isLoading && !error && !isSubmitted && (
+      {message?.success && <SubmitedReview />}
+      {!message?.success && (
         <div className={styles.reviewContainer} id="review">
+          {message?.submiterror && (
+            <p className={styles.errorMessage}>{message.submiterror}</p>
+          )}
           <div className={styles.reviewContent}>
             <h2 htmlFor="review" className={styles.title}>
               Share Your Experience
@@ -35,17 +28,18 @@ function Review() {
               experience with Jola Estates
             </p>
 
-            <form onSubmit={handleSubmit} className={styles.reviewForm}>
+            <Form method="POST" action="/review" className={styles.reviewForm}>
+              {/* Hidden input for rating */}
+              <input type="hidden" name="rating" value={rating} />
+
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label htmlFor="title" className={styles.label}>
-                    Title *
+                    Title
                   </label>
                   <select
                     id="title"
                     name="title"
-                    value={formData.title}
-                    onChange={handleChange}
                     required
                     className={styles.select}
                   >
@@ -70,8 +64,6 @@ function Review() {
                     type="text"
                     id="fullName"
                     name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
                     required
                     className={styles.input}
                     placeholder="Enter your full name"
@@ -86,11 +78,18 @@ function Review() {
                       key={star}
                       type="button"
                       className={`${styles.star} ${
-                        star <= (hoveredRating || formData.rating)
+                        star <= (hoveredRating || rating)
                           ? styles.starFilled
                           : ""
                       }`}
-                      onClick={() => handleRatingClick(star)}
+                      onClick={() => {
+                        handleRatingClick(star);
+                        // Update the hidden input value
+                        const hiddenInput = document.querySelector(
+                          'input[name="rating"]'
+                        );
+                        if (hiddenInput) hiddenInput.value = star;
+                      }}
                       onMouseEnter={() => setHoveredRating(star)}
                       onMouseLeave={() => setHoveredRating(0)}
                     >
@@ -98,12 +97,13 @@ function Review() {
                     </button>
                   ))}
                   <span className={styles.ratingText}>
-                    {formData.rating > 0
-                      ? `${formData.rating} out of 5`
-                      : "Select a rating"}
+                    {rating > 0 ? `${rating} out of 5` : "Select a rating"}
                   </span>
                 </div>
               </div>
+              {message?.ratingerror && (
+                <p className={styles.errorMessage}>{message.ratingerror}</p>
+              )}
               <div className={styles.formGroup}>
                 <label htmlFor="comments" className={styles.label}>
                   Comments *
@@ -111,8 +111,6 @@ function Review() {
                 <textarea
                   id="comments"
                   name="comments"
-                  value={formData.comments}
-                  onChange={handleChange}
                   required
                   className={styles.textarea}
                   placeholder="Share your experience with us..."
@@ -120,10 +118,14 @@ function Review() {
                   maxLength={300}
                 />
               </div>
-              <button type="submit" className={styles.submitButton}>
-                Submit Review
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={styles.submitButton}
+              >
+                {isSubmitting ? "Submitting..." : "Submit Review"}
               </button>
-            </form>
+            </Form>
           </div>
         </div>
       )}

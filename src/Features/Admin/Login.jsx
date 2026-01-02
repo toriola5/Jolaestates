@@ -1,50 +1,13 @@
 import { useState } from "react";
 import styles from "./Login.module.css";
-import { supabase } from "../../Utils/Supabase";
-import { NavLink } from "react-router-dom";
+import { NavLink, useActionData } from "react-router-dom";
+import { Form, useNavigation } from "react-router-dom";
 
 function Login() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const message = useActionData();
+  const navigation = useNavigation();
+  const loading = navigation.state === "submitting";
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-    // Clear error when user starts typing
-    if (error) setError(null);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (error) throw error;
-
-      // Navigation will happen automatically via onAuthStateChange in Admin.jsx
-    } catch (error) {
-      console.error("Login error:", error);
-      setError(
-        error.message || "Failed to sign in. Please check your credentials."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className={styles.loginContainer}>
@@ -52,14 +15,15 @@ function Login() {
         &larr; Back to Home
       </NavLink>
       <div className={styles.loginCard}>
+        {message && message.formerror && (
+          <div className={styles.errorMessage}>{message.formerror}</div>
+        )}
         <div className={styles.loginHeader}>
           <h2 className={styles.title}>Welcome Back</h2>
           <p className={styles.subtitle}>Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.loginForm}>
-          {error && <div className={styles.errorMessage}>{error}</div>}
-
+        <Form method="POST" action="/admin/login" className={styles.loginForm}>
           <div className={styles.formGroup}>
             <label htmlFor="email" className={styles.label}>
               Email Address
@@ -68,8 +32,6 @@ function Login() {
               type="email"
               id="email"
               name="email"
-              value={formData.email}
-              onChange={handleChange}
               required
               className={styles.input}
               placeholder="Enter your email"
@@ -85,8 +47,6 @@ function Login() {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
-                value={formData.password}
-                onChange={handleChange}
                 required
                 className={styles.input}
                 placeholder="Enter your password"
@@ -108,7 +68,7 @@ function Login() {
           >
             {loading ? "Signing In..." : "Sign In"}
           </button>
-        </form>
+        </Form>
       </div>
     </div>
   );

@@ -40,7 +40,7 @@ const services = [
 
 function Services() {
   return (
-    <section section id="services-head" className={styles.serviceHead}>
+    <section className={styles.serviceHead}>
       <h2 className={styles.subheading}>
         Our <span>Services</span>
       </h2>
