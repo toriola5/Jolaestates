@@ -26,6 +26,12 @@ export async function uploadReview({ request }) {
     return errorMessages;
   }
 
+  //  Event snippet for Submit lead form conversion page
+  /* global gtag */
+  gtag("event", "conversion", {
+    send_to: "AW-17851775366/GKi1CMKvzN4bEIbzscBC",
+  });
+
   await addDoc(collection(db, "Comments"), {
     fullname: reviewData.fullName,
     rating: Number(reviewData.rating),
