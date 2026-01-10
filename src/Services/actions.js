@@ -197,5 +197,5 @@ export async function loginAction({ request }) {
       error.message || "Failed to sign in. Please check your credentials.";
     return errorMessages;
   }
-  return redirect("/admin/properties/1");
+  return redirect("/admin/properties");
 }
