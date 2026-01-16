@@ -9,6 +9,9 @@ function Login() {
   const loading = navigation.state === "submitting";
   const [showPassword, setShowPassword] = useState(false);
 
+  console.log("Login component - message:", message);
+  console.log("Login component - loading:", loading);
+
   return (
     <div className={styles.loginContainer}>
       <NavLink to="/" className={styles.homeLink}>
@@ -16,14 +19,14 @@ function Login() {
       </NavLink>
       <div className={styles.loginCard}>
         {message && message.formerror && (
-          <div className={styles.errorMessage}>{message.formerror}</div>
+          <div className={styles.errorMessage}>{message.formerror} five</div>
         )}
         <div className={styles.loginHeader}>
           <h2 className={styles.title}>Welcome Back</h2>
           <p className={styles.subtitle}>Sign in to your account</p>
         </div>
 
-        <Form method="POST" action="/admin/login" className={styles.loginForm}>
+        <Form method="post" action="/admin/login" className={styles.loginForm}>
           <div className={styles.formGroup}>
             <label htmlFor="email" className={styles.label}>
               Email Address

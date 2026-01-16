@@ -25,6 +25,8 @@ function useUpload() {
   const [formData, setFormData] = useState(initialFormData);
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [videoPreviews, setVideoPreviews] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [uploadError, setUploadError] = useState(null);
   const imagePreviewsRef = useRef([]);
@@ -83,16 +85,51 @@ function useUpload() {
     setImagePreviews(newPreviews);
   };
 
+  const handleVideoUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const maxSize = 100 * 1024 * 1024; // 100MB limit
+    const validTypes = ["video/mp4", "video/webm", "video/quicktime"];
+
+    const validVideos = files.filter((file) => {
+      if (!validTypes.includes(file.type)) {
+        setUploadError(`${file.name} is not a valid video format`);
+        return false;
+      }
+      if (file.size > maxSize) {
+        setUploadError(`${file.name} exceeds 100MB limit`);
+        return false;
+      }
+      return true;
+    });
+
+    setVideos([...videos, ...validVideos]);
+    const newPreviews = validVideos.map((file) => URL.createObjectURL(file));
+    setVideoPreviews([...videoPreviews, ...newPreviews]);
+  };
+
+  const removeVideo = (index) => {
+    if (videoPreviews[index]) {
+      URL.revokeObjectURL(videoPreviews[index]);
+    }
+    setVideos(videos.filter((_, i) => i !== index));
+    setVideoPreviews(videoPreviews.filter((_, i) => i !== index));
+  };
+
+  // Return these in the hook
   return {
     formData,
     images,
     imagePreviews,
+    videos,
+    videoPreviews,
     nigerianStates,
     propertyFeatures,
     handleChange,
     handleFeatureToggle,
     handleImageUpload,
     removeImage,
+    handleVideoUpload,
+    removeVideo,
     setFormData,
     initialFormData,
     prepareFormData,

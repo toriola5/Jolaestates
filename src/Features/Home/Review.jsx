@@ -11,14 +11,12 @@ function Review() {
   const message = useActionData();
   const navigate = useNavigation();
   const isSubmitting = navigate.state === "submitting";
+
   return (
     <>
       {message?.success && <SubmitedReview />}
       {!message?.success && (
         <div className={styles.reviewContainer} id="review">
-          {message?.submiterror && (
-            <p className={styles.errorMessage}>{message.submiterror}</p>
-          )}
           <div className={styles.reviewContent}>
             <h2 htmlFor="review" className={styles.title}>
               Share Your Experience
@@ -29,6 +27,9 @@ function Review() {
             </p>
 
             <Form method="POST" action="/review" className={styles.reviewForm}>
+              {message?.submiterror && (
+                <p className={styles.errorMessage}>{message.submiterror}</p>
+              )}
               {/* Hidden input for rating */}
               <input type="hidden" name="rating" value={rating} />
 
@@ -111,7 +112,6 @@ function Review() {
                 <textarea
                   id="comments"
                   name="comments"
-                  required
                   className={styles.textarea}
                   placeholder="Share your experience with us..."
                   rows="6"

@@ -195,8 +195,9 @@ function PublicShowProperties() {
                       content={`https://jotestateagency.com/property/${property.id}`}
                     />
                   </Helmet> */}
-                    <ImageGallery
+                    <MediaGallery
                       images={property.images}
+                      videos={property.video_urls}
                       title={property.title}
                       listingType={property.listing_type}
                     />
@@ -305,38 +306,100 @@ function PublicShowProperties() {
   );
 }
 
-function ImageGallery({ images, title, listingType }) {
+function MediaGallery({ images, videos, title, listingType }) {
+  // Combine images and videos into a single media array
+  const media = [
+    ...(videos || []).map((url) => ({ type: "video", url })),
+    ...(images || []).map((url) => ({ type: "image", url })),
+  ];
+
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handlePrevious = () => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? images.length - 1 : prevIndex - 1
+      prevIndex === 0 ? media.length - 1 : prevIndex - 1
     );
   };
 
   const handleNext = () => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === images.length - 1 ? 0 : prevIndex + 1
+      prevIndex === media.length - 1 ? 0 : prevIndex + 1
     );
   };
 
+  const currentMedia = media[currentIndex];
+
   return (
     <div className={styles.imageWrapper}>
-      {images && images.length > 0 ? (
-        <img src={images[currentIndex]} alt={title} className={styles.image} />
+      {media && media.length > 0 ? (
+        currentMedia.type === "image" ? (
+          <img src={currentMedia.url} alt={title} className={styles.image} />
+        ) : (
+          <video
+            src={currentMedia.url}
+            className={styles.image}
+            controls
+            style={{ width: "100%", height: "100%" }}
+          />
+        )
       ) : (
-        <div className={styles.noImage}>No Image Available</div>
+        <div className={styles.noImage}>No Media Available</div>
       )}
       <div className={styles.badge}>{listingType}</div>
-      {images.length > 1 && (
-        <button className={styles.previousButtons} onClick={handlePrevious}>
-          &larr;
-        </button>
+      {media.length > 1 && (
+        <>
+          <button className={styles.previousButtons} onClick={handlePrevious}>
+            &larr;
+          </button>
+          <button className={styles.nextButtons} onClick={handleNext}>
+            &rarr;
+          </button>
+          <div className={styles.mediaCounter}>
+            {currentIndex + 1} / {media.length}
+          </div>
+        </>
       )}
-      {images.length > 1 && (
-        <button className={styles.nextButtons} onClick={handleNext}>
-          &rarr;
-        </button>
+    </div>
+  );
+}
+
+function VideoGallery({ videos, title }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  if (!videos || videos.length === 0) return null;
+
+  const handlePrevious = () => {
+    setCurrentIndex((prev) => (prev === 0 ? videos.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev === videos.length - 1 ? 0 : prev + 1));
+  };
+
+  return (
+    <div className={styles.videoWrapper}>
+      <video
+        key={videos[currentIndex]}
+        controls
+        className={styles.video}
+        style={{ width: "100%", maxHeight: "400px" }}
+      >
+        <source src={videos[currentIndex]} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+
+      {videos.length > 1 && (
+        <>
+          <button className={styles.previousButtons} onClick={handlePrevious}>
+            &larr;
+          </button>
+          <button className={styles.nextButtons} onClick={handleNext}>
+            &rarr;
+          </button>
+          <div className={styles.videoCounter}>
+            Video {currentIndex + 1} of {videos.length}
+          </div>
+        </>
       )}
     </div>
   );

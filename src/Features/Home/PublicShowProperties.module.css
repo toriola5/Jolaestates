@@ -220,6 +220,18 @@
   justify-content: center;
 }
 
+.mediaCounter {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
 .content {
   padding: 1.5rem;
 }
@@ -394,6 +406,30 @@
   background: transparent;
   cursor: default;
   color: #6b7280;
+}
+
+/* Video Styles */
+.videoWrapper {
+  position: relative;
+  margin-top: 1rem;
+  background: #000;
+}
+
+.video {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+}
+
+.videoCounter {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
 }
 
 /* Responsive Design */

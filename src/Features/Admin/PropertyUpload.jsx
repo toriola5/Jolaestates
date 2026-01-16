@@ -23,8 +23,11 @@ function PropertyUpload({ isEditMode = false }) {
     propertyFeatures,
     handleFeatureToggle,
     handleImageUpload,
+    handleVideoUpload,
     imagePreviews,
+    videoPreviews,
     removeImage,
+    removeVideo,
     uploadError,
     setUploadError,
     setFormData,
@@ -393,6 +396,53 @@ function PropertyUpload({ isEditMode = false }) {
                       <button
                         type="button"
                         onClick={() => removeImage(index)}
+                        className={styles.removeImage}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Videos */}
+          {!isEditMode && (
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>Property Videos (Optional)</h3>
+
+              <div className={styles.imageUpload}>
+                <input
+                  type="file"
+                  id="videos"
+                  name="videos"
+                  accept="video/mp4,video/webm,video/quicktime"
+                  multiple
+                  onChange={handleVideoUpload}
+                  className={styles.fileInput}
+                />
+                <label htmlFor="videos" className={styles.fileLabel}>
+                  <span>🎥</span>
+                  <span>Click to upload videos</span>
+                  <span className={styles.fileHint}>
+                    MP4, WebM (Max 100MB per video)
+                  </span>
+                </label>
+              </div>
+
+              {videoPreviews.length > 0 && (
+                <div className={styles.imagePreviewGrid}>
+                  {videoPreviews.map((preview, index) => (
+                    <div key={index} className={styles.imagePreview}>
+                      <video
+                        src={preview}
+                        controls
+                        style={{ width: "100%", height: "200px" }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeVideo(index)}
                         className={styles.removeImage}
                       >
                         ×

@@ -30,3 +30,36 @@ export async function uploadImageCloud(image) {
   console.log("Upload successful. Public URL:", publicUrl);
   return publicUrl;
 }
+
+export async function uploadVideoCloud(video) {
+  if (!video) return null;
+
+  const fileExt = video.name.split(".").pop();
+  const fileName = `videos/${Date.now()}-${Math.random()
+    .toString(36)
+    .substring(2, 15)}.${fileExt}`;
+
+  const { error } = await supabase.storage
+    .from("Jayeolaestates")
+    .upload(fileName, video, {
+      cacheControl: "3600",
+      upsert: true,
+    });
+
+  if (error) {
+    console.error("Error uploading video:", error);
+    throw error;
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("Jayeolaestates").getPublicUrl(fileName);
+
+  return publicUrl;
+}
+
+export async function uploadMultipleVideos(videos) {
+  const uploadPromises = videos.map((video) => uploadVideoCloud(video));
+  const urls = await Promise.all(uploadPromises);
+  return urls.filter((url) => url !== null);
+}

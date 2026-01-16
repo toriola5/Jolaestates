@@ -1,7 +1,7 @@
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../Utils/firebase.js";
 import { preparePropertyData } from "../Utils/helper.js";
-import { uploadImageCloud } from "./imageUpload.js";
+import { uploadImageCloud, uploadMultipleVideos } from "./imageUpload.js";
 import { supabase } from "../Utils/Supabase.js";
 import { redirect } from "react-router-dom";
 import { updatePropertyByID } from "./propertyQuery.js";
@@ -21,16 +21,20 @@ export async function uploadReview({ request }) {
 
   const errorMessages = {};
   // Validate required fields
+  if (!reviewData.fullName || reviewData.fullName.trim() === "") {
+    errorMessages.submiterror = "Full Name is required.";
+    return errorMessages;
+  }
+  if (!reviewData.comments || reviewData.comments.trim() === "") {
+    errorMessages.submiterror = "Comments are required.";
+    return errorMessages;
+  }
   if (reviewData.rating === "0") {
     errorMessages.ratingerror = "Please provide a rating.";
     return errorMessages;
   }
 
   //  Event snippet for Submit lead form conversion page
-  /* global gtag */
-  gtag("event", "conversion", {
-    send_to: "AW-17851775366/GKi1CMKvzN4bEIbzscBC",
-  });
 
   await addDoc(collection(db, "Comments"), {
     fullname: reviewData.fullName,
@@ -50,9 +54,32 @@ export async function UploadProperty({ request }) {
   const errorMessages = {};
   try {
     const formData = await request.formData();
-    // Get the uploaded images
     const images = formData.getAll("images");
-    console.log("Number of images uploaded:", images.length);
+    const videos = formData.getAll("videos");
+
+    // Validate videos
+    const actualVideos = videos.filter(
+      (vid) => vid instanceof File && vid.size > 0
+    );
+
+    let videoUrls = [];
+    if (actualVideos.length > 0) {
+      try {
+        videoUrls = await uploadMultipleVideos(actualVideos);
+        console.log("Uploaded video URLs:", videoUrls);
+      } catch (videoUploadError) {
+        console.error("Error uploading videos:", videoUploadError);
+        errorMessages.videoError = "Failed to upload videos. Please try again.";
+        return errorMessages;
+      }
+    }
+    const maxVideoSize = 100 * 1024 * 1024; // 100MB
+    for (const video of actualVideos) {
+      if (video.size > maxVideoSize) {
+        errorMessages.videoError = `Video ${video.name} exceeds 100MB limit`;
+        return errorMessages;
+      }
+    }
 
     const sortedData = {};
     for (const [key, value] of formData.entries()) {
@@ -134,6 +161,7 @@ export async function UploadProperty({ request }) {
     const propertyData = {
       ...preparedData,
       images: imageUrls,
+      video_urls: videoUrls,
       created_at: new Date().toISOString(),
     };
     // Insert property into database with timeout
@@ -172,30 +200,40 @@ export async function UploadProperty({ request }) {
 }
 
 export async function loginAction({ request }) {
+  console.log("loginAction: Function called");
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
 
   console.log("Login attempt for email:", email);
-  console.log("Password length:", password);
+  console.log("Password provided:", !!password);
 
+  const errorMessages = {};
+
+  // Validate required fields first
+  if (!email || !password) {
+    console.log("Validation failed: missing email or password");
+    errorMessages.formerror = "Email and password are required.";
+    console.log("Returning error:", errorMessages);
+    return errorMessages;
+  }
+
+  // Attempt authentication only after validation
+  console.log("Attempting Supabase authentication...");
   const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
-  const errorMessages = {};
-
-  if (!email || !password) {
-    errorMessages.formerror = "Email and password are required.";
-    return errorMessages;
-  }
-
   if (error) {
     console.error("Login error:", error);
+    console.log("Authentication failed, returning error message");
     errorMessages.formerror =
-      error.message || "Failed to sign in. Please check your credentials.";
+      "Failed to sign in. Please check your credentials.";
+    console.log("Returning error:", errorMessages);
     return errorMessages;
   }
+
+  console.log("Login successful, redirecting...");
   return redirect("/admin/properties");
 }
