@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "../../Utils/Supabase.js";
 import styles from "./PublicShowProperties.module.css";
 import Loading from "../../ui/Loading.jsx";
@@ -21,6 +21,58 @@ function PublicShowProperties() {
     propertyType: "all",
     state: "all",
   });
+  const preloadedImagesRef = useRef(new Set());
+
+  // Function to preload images
+  const preloadImages = useCallback((imageUrls) => {
+    imageUrls.forEach((url) => {
+      if (!preloadedImagesRef.current.has(url)) {
+        const img = new Image();
+        img.src = url;
+        preloadedImagesRef.current.add(url);
+      }
+    });
+  }, []);
+
+  // Function to fetch properties for a specific page (used for preloading)
+  const fetchPropertiesForPage = useCallback(
+    async (page) => {
+      try {
+        const from = (page - 1) * itemsPerPage;
+        const to = from + itemsPerPage - 1;
+
+        let query = supabase
+          .from("properties")
+          .select("*")
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .range(from, to);
+
+        // Apply filters
+        if (filter.listingType !== "all") {
+          query = query.eq("listing_type", filter.listingType);
+        }
+        if (filter.propertyType !== "all") {
+          query = query.eq("property_type", filter.propertyType);
+        }
+        if (filter.state !== "all") {
+          query = query.eq("state", filter.state);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        // Extract and preload all images from the fetched properties
+        const allImages = (data || []).flatMap(
+          (property) => property.images || [],
+        );
+        preloadImages(allImages);
+      } catch (error) {
+        console.error("Error preloading images:", error);
+      }
+    },
+    [filter, itemsPerPage, preloadImages],
+  );
 
   const fetchProperties = useCallback(async () => {
     try {
@@ -65,13 +117,30 @@ function PublicShowProperties() {
       const { data, error } = await query;
       if (error) throw error;
       setProperties(data || []);
+
+      // Preload images from current page
+      const currentImages = (data || []).flatMap(
+        (property) => property.images || [],
+      );
+      preloadImages(currentImages);
+
+      // Preload next and previous pages' images in the background
+      const totalPages = Math.ceil((count || 0) / itemsPerPage);
+      if (currentPage < totalPages) {
+        // Preload next page
+        setTimeout(() => fetchPropertiesForPage(currentPage + 1), 500);
+      }
+      if (currentPage > 1) {
+        // Preload previous page
+        setTimeout(() => fetchPropertiesForPage(currentPage - 1), 500);
+      }
     } catch (error) {
       console.error("Error fetching properties:", error);
       setError(error.message);
     } finally {
       setLoading(false);
     }
-  }, [filter, currentPage]);
+  }, [filter, currentPage, preloadImages, fetchPropertiesForPage]);
 
   useEffect(() => {
     fetchProperties();
@@ -182,19 +251,6 @@ function PublicShowProperties() {
               <div className={styles.grid}>
                 {properties.map((property) => (
                   <div key={property.id} className={styles.card}>
-                    {/* <Helmet>
-                    <title>{property.title} - Jola Estates</title>
-                    <meta
-                      name="description"
-                      content={property.description.slice(0, 155)}
-                    />
-                    <meta property="og:title" content={property.title} />
-                    <meta property="og:image" content={property.images[0]} />
-                    <meta
-                      property="og:url"
-                      content={`https://jotestateagency.com/property/${property.id}`}
-                    />
-                  </Helmet> */}
                     <MediaGallery
                       images={property.images}
                       videos={property.video_urls}
@@ -244,7 +300,7 @@ function PublicShowProperties() {
                         </div>
                         <a
                           href={`https://wa.me/2348023388329?text=${encodeURIComponent(
-                            `Hello, I am interested in the property titled "${property.title}" at  ${property.address} ${property.city}, ${property.state}.`
+                            `Hello, I am interested in the property titled "${property.title}" at  ${property.address} ${property.city}, ${property.state}.`,
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -285,7 +341,7 @@ function PublicShowProperties() {
                         >
                           {page}
                         </button>
-                      )
+                      ),
                     )}
                   </div>
 
@@ -308,22 +364,45 @@ function PublicShowProperties() {
 
 function MediaGallery({ images, videos, title, listingType }) {
   // Combine images and videos into a single media array
-  const media = [
-    ...(videos || []).map((url) => ({ type: "video", url })),
-    ...(images || []).map((url) => ({ type: "image", url })),
-  ];
+  const media = useMemo(
+    () => [
+      ...(videos || []).map((url) => ({ type: "video", url })),
+      ...(images || []).map((url) => ({ type: "image", url })),
+    ],
+    [images, videos],
+  );
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Preload adjacent images for smoother navigation
+  useEffect(() => {
+    if (media.length > 1) {
+      // Preload next image
+      const nextIndex = (currentIndex + 1) % media.length;
+      if (media[nextIndex]?.type === "image") {
+        const img = new Image();
+        img.src = media[nextIndex].url;
+      }
+
+      // Preload previous image
+      const prevIndex =
+        currentIndex === 0 ? media.length - 1 : currentIndex - 1;
+      if (media[prevIndex]?.type === "image") {
+        const img = new Image();
+        img.src = media[prevIndex].url;
+      }
+    }
+  }, [currentIndex, media]);
+
   const handlePrevious = () => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? media.length - 1 : prevIndex - 1
+      prevIndex === 0 ? media.length - 1 : prevIndex - 1,
     );
   };
 
   const handleNext = () => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === media.length - 1 ? 0 : prevIndex + 1
+      prevIndex === media.length - 1 ? 0 : prevIndex + 1,
     );
   };
 
@@ -363,7 +442,7 @@ function MediaGallery({ images, videos, title, listingType }) {
   );
 }
 
-function VideoGallery({ videos, title }) {
+function VideoGallery({ videos }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (!videos || videos.length === 0) return null;
