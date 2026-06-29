@@ -3,6 +3,26 @@ function About() {
   return (
     <section className={styles.container} id="about">
       <h2>About Us</h2>
+
+      <div className={styles.statsRow}>
+        <div className={styles.statBadge}>
+          <span>10+</span>
+          <p>Years Experience</p>
+        </div>
+        <div className={styles.statBadge}>
+          <span>100+</span>
+          <p>Satisfied Clients</p>
+        </div>
+        <div className={styles.statBadge}>
+          <span>2014</span>
+          <p>Year Established</p>
+        </div>
+        <div className={styles.statBadge}>
+          <span>CRBN</span>
+          <p>Registered Firm</p>
+        </div>
+      </div>
+
       <div className={styles.about}>
         <div className={styles.left}>
           <img src="/face1.jpeg" alt="CEO Image"></img>

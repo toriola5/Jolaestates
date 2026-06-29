@@ -4,69 +4,67 @@ import Map from "./Map";
 function Contact() {
   return (
     <section className={Style.contact} id="contact">
-      <div className={Style.contactMap}>
-        <h2>Find Us</h2>
-        <div className={Style.mapShell}>
+      <div className={Style.contactInner}>
+        <div className={Style.brand}>
+          <h2 className={Style.brandName}>
+            J.OLA TORIOLA
+            <br />
+            REAL ESTATE AGENCY
+          </h2>
+          <p className={Style.brandTagline}>
+            Trusted real estate solutions across Nigeria since 2014.
+          </p>
+        </div>
+
+        <div className={Style.details}>
+          <div>
+            <h3>Address</h3>
+            <p>
+              41 Commercial Avenue,
+              <br />
+              Sabo Yaba, Lagos
+            </p>
+          </div>
+          <div>
+            <h3>Phone</h3>
+            <p>
+              +234 802 338 8329
+              <br />
+              +234 706 457 0479
+            </p>
+            <h3>Email</h3>
+            <p>jolatoriolaestate4u@gmail.com</p>
+          </div>
+          <div className={Style.socials}>
+            <h3>Follow Us</h3>
+            <a
+              href="https://www.instagram.com/jayeolatoriola/"
+              className={Style.socialLink}
+            >
+              <img src="/instagram.svg" alt="Instagram" /> Instagram
+            </a>
+            <a
+              href="https://www.facebook.com/J.olatoriola/?locale=en_GB"
+              className={Style.socialLink}
+            >
+              <img src="/facebook.svg" alt="Facebook" /> Facebook
+            </a>
+            <a
+              href="https://www.tiktok.com/@jayeolatoriola?lang=en"
+              className={Style.socialLink}
+            >
+              <img src="/tiktok.svg" alt="TikTok" /> TikTok
+            </a>
+            <a href="https://x.com/jayetori" className={Style.socialLink}>
+              <img src="/twitter-x.svg" alt="X" /> X
+            </a>
+          </div>
+        </div>
+
+        <div className={Style.mapWrapper}>
+          <h3>Find Us</h3>
           <Map />
         </div>
-      </div>
-      <div className={Style.contact2}>
-        <h1>
-          J.OLA TORIOLA <br />
-          REAL ESTATE <br />
-          AGENCY
-        </h1>
-        <h2>Adress</h2>
-        <p>
-          41, COMMERCIAL AVENUE <br />
-          SABO YABA LAGOS
-        </p>
-      </div>
-      <div className={Style.contact3}>
-        <h2>Contacts</h2>
-        <p>+2348023388329</p>
-        <p>+2347064570479</p>
-
-        <h2>Email</h2>
-        <p>jolatoriolaestate4u@gmail.com</p>
-      </div>
-      <div className={Style.contact4}>
-        <h2>Socials</h2>
-
-        <p>
-          <a
-            href="https://www.instagram.com/jayeolatoriola/"
-            className={Style.contactlink}
-          >
-            <img src="/instagram.svg" alt="instagram Logo" />
-            Instagram
-          </a>
-        </p>
-
-        <p>
-          <a
-            href="https://www.facebook.com/J.olatoriola/?locale=en_GB"
-            className={Style.contactlink}
-          >
-            <img src="/facebook.svg" alt="facebook logo" />
-            Facebook
-          </a>
-        </p>
-
-        <p>
-          <a
-            href="https://www.tiktok.com/@jayeolatoriola?lang=en"
-            className={Style.contactlink}
-          >
-            <img src="/tiktok.svg" alt="tiktok logo" /> Tiktok
-          </a>
-        </p>
-
-        <p>
-          <a className={Style.contactlink} href="https://x.com/jayetori">
-            <img src="/twitter-x.svg" alt="X logo" /> X
-          </a>
-        </p>
       </div>
     </section>
   );

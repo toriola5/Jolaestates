@@ -6,7 +6,20 @@
   --gray: #f4f4f6;
   --white: #ffffff;
   --text-dark: #333;
+  --text-muted: #6b7280;
+  --border-light: #e5e7eb;
   --shadow: 0 4px 16px rgba(26, 34, 56, 0.1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 body {
   margin: 0;

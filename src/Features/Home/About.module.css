@@ -41,7 +41,8 @@
   padding: 1rem;
   box-shadow: var(--shadow);
   border: 1px solid var(--gray);
-  text-align: justify;
+  text-align: left;
+  hyphens: auto;
   width: 100%;
 }
 
@@ -57,4 +58,49 @@
   width: 100%;
   background-color: #f9fafb;
   padding-bottom: 2rem;
+  animation: fadeInUp 0.6s ease both;
+}
+
+.statsRow {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 800px;
+  margin: 0 auto 2.5rem;
+  padding: 0 1rem;
+}
+
+.statBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--white);
+  border: 2px solid var(--primary-red);
+  border-radius: 0.8rem;
+  padding: 1rem 1.5rem;
+  min-width: 130px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease;
+}
+
+.statBadge:hover {
+  transform: translateY(-4px);
+}
+
+.statBadge span {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--primary-red);
+  line-height: 1;
+}
+
+.statBadge p {
+  margin: 0.3rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
 }

@@ -10,6 +10,7 @@
 .serviceHead {
   padding-top: 4rem;
   margin-bottom: 2rem;
+  animation: fadeInUp 0.6s ease both;
 }
 .serviceHead h3 {
   color: var(--navy);
@@ -42,6 +43,23 @@
   max-width: 350px;
   min-width: 280px;
   border: 1px solid var(--gray);
+  animation: fadeInUp 0.5s ease both;
+}
+
+.serviceContent:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.serviceContent:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.serviceContent:nth-child(4) {
+  animation-delay: 0.3s;
+}
+.serviceContent:nth-child(5) {
+  animation-delay: 0.4s;
+}
+.serviceContent:nth-child(6) {
+  animation-delay: 0.5s;
 }
 
 .serviceContent:hover {
@@ -71,7 +89,8 @@
 .serviceContent p {
   color: var(--text-dark);
   margin-bottom: 2rem;
-  text-align: justify;
+  text-align: left;
+  hyphens: auto;
   line-height: 1.6;
   flex-grow: 1;
 }
@@ -80,10 +99,14 @@
   background: var(--primary-red);
   color: var(--white);
   border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem 2rem;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
   text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .serviceContent button:hover {

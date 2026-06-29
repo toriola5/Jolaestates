@@ -1,5 +1,6 @@
 .hero {
-  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
     url("/home.jpg") top center/cover no-repeat;
   height: 100vh;
   display: flex;
@@ -27,7 +28,42 @@
   display: flex;
   flex-direction: row;
   gap: 20px;
-  margin-bottom: 5rem;
+  margin-bottom: 1.5rem;
+}
+
+.statsBar {
+  display: flex;
+  gap: 2.5rem;
+  padding: 1rem 2.5rem;
+  margin-bottom: 3rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: fadeInUp 0.8s ease 0.3s both;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.statNum {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--primary-red);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
 }
 button {
   font-size: 1.1rem;
@@ -77,5 +113,15 @@ button {
   }
   .actionables .secondaryBtn {
     margin-left: 0;
+  }
+  .statsBar {
+    gap: 1.2rem;
+    padding: 0.8rem 1.2rem;
+  }
+  .statNum {
+    font-size: 1.3rem;
+  }
+  .statLabel {
+    font-size: 0.6rem;
   }
 }
